@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ploton - Organização Financeira</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h2 class="logo">PLOTON</h2>
+            <nav>
+                <ul>
+                    <li class="active">Painel</li>
+                    <li>Transações</li>
+                    <li>Orçamentos</li>
+                    <li>Metas</li>
+                    <li>Investimentos</li>
+                    <li>Livelo</li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="summary-cards">
+                    <div class="card-mini">
+                        <span>Renda Total</span>
+                        <p class="green-text">R$ 5.000,00</p>
+                    </div>
+                    <div class="card-mini">
+                        <span>Gastos</span>
+                        <p class="red-text">R$ 2.400,00</p>
+                    </div>
+                    <div class="card-mini">
+                        <span>Sobras</span>
+                        <p class="green-glow">R$ 2.600,00</p>
+                    </div>
+                </div>
+                <div class="user-info">
+                    Olá, <span class="user-name">João Pedro</span>
+                </div>
+            </header>
+
+            <section class="dashboard-grid">
+                <div class="grid-item graph-card">
+                    <h3>Gráfico de Fatura</h3>
+                    <div class="placeholder-chart">
+                        <div class="line-mockup"></div>
+                    </div>
+                </div>
+                
+                <div class="grid-item transactions-card">
+                    <h3>Transações Recentes</h3>
+                    <ul class="transaction-list">
+                        <li><span>Netflix</span> <span class="val">-50,00</span></li>
+                        <li><span>Supermercado</span> <span class="val">-150,00</span></li>
+                        <li><span>Academia</span> <span class="val">-90,00</span></li>
+                    </ul>
+                </div>
+
+                <div class="grid-item investments-card">
+                    <h3>Investimentos</h3>
+                    <div class="inv-summary">
+                        <p>Total: <span class="green-text">R$ 12.450,00</span></p>
+                        <div class="bar-chart-mockup">
+                            <div class="bar" style="height: 60%;"></div>
+                            <div class="bar" style="height: 80%;"></div>
+                            <div class="bar" style="height: 40%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
