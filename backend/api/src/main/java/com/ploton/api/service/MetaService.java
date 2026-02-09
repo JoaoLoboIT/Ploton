@@ -44,4 +44,52 @@ public class MetaService {
     public List<Meta> listarPorUsuario(Long usuarioId) {
         return metaRepository.findByUsuarioIdOrderByDataLimiteAsc(usuarioId);
     }
+
+    @Transactional
+    public Meta atualizarSaldo(Long metaId, BigDecimal valor, String tipo) {
+        Meta meta = metaRepository.findById(metaId)
+                .orElseThrow(() -> new RuntimeException("Meta não encontrada com ID: " + metaId));
+
+        if ("ADICIONAR".equalsIgnoreCase(tipo)) {
+            meta.setValorAtual(meta.getValorAtual().add(valor));
+        } else if ("REMOVER".equalsIgnoreCase(tipo)) {
+            BigDecimal novoValor = meta.getValorAtual().subtract(valor);
+
+            // Regra de Negócio: Não deixar o saldo ficar negativo
+            if (novoValor.compareTo(BigDecimal.ZERO) < 0) {
+                throw new RuntimeException("Saldo insuficiente na meta para realizar esta retirada.");
+            }
+            meta.setValorAtual(novoValor);
+        } else {
+            throw new RuntimeException("Operação inválida. Use ADICIONAR ou REMOVER.");
+        }
+
+        return metaRepository.save(meta);
+    }
+
+    @Transactional
+    public Meta atualizar(Long id, MetaRequestDTO dto) {
+        Meta meta = metaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Meta não encontrada com ID: " + id));
+
+        // Atualizamos os dados cadastrais
+        meta.setNome(dto.nome());
+        meta.setDescricao(dto.descricao());
+        meta.setValorAlvo(dto.valorAlvo());
+        meta.setDataLimite(dto.dataLimite());
+
+        if (dto.valorAtual() != null) {
+            meta.setValorAtual(dto.valorAtual());
+        }
+
+        return metaRepository.save(meta);
+    }
+
+    @Transactional
+    public void deletar(Long id) {
+        if (!metaRepository.existsById(id)) {
+            throw new RuntimeException("Meta não encontrada com ID: " + id);
+        }
+        metaRepository.deleteById(id);
+    }
 }

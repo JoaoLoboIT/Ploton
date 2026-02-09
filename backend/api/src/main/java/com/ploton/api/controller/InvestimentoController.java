@@ -42,4 +42,6 @@ public class InvestimentoController {
         MovimentacaoInvestimento mov = service.registrarMovimentacao(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(mov);
     }
+
+
 }

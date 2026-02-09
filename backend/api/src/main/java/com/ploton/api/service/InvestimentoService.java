@@ -43,14 +43,11 @@ public class InvestimentoService {
         return investimentoRepository.findByUsuarioIdOrderByNomeAsc(usuarioId);
     }
 
-    // O Coração da Lógica de Investimento: Histórico + Atualização de Saldo
     @Transactional
     public MovimentacaoInvestimento registrarMovimentacao(MovimentacaoRequestDTO dto) {
-        // 1. Busca o investimento alvo
         Investimento investimento = investimentoRepository.findById(dto.investimentoId())
                 .orElseThrow(() -> new RuntimeException("Investimento não encontrado"));
 
-        // 2. Cria o registro histórico (O Extrato)
         MovimentacaoInvestimento mov = new MovimentacaoInvestimento();
         mov.setInvestimento(investimento);
         mov.setValor(dto.valor());
