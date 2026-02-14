@@ -26,6 +26,20 @@ public class UsuarioService {
         return repository.save(novoUsuario);
     }
 
+    public Usuario fazerLogin(String email, String senha) {
+        // 1. Busca o usuário pelo email
+        Usuario usuario = repository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+
+        // 2. Confere se a senha do banco é igual a senha digitada
+        if (!usuario.getSenha().equals(senha)) {
+            throw new RuntimeException("Senha incorreta.");
+        }
+
+        // 3. Se tudo deu certo, devolve o usuário
+        return usuario;
+    }
+
     // Metodo auxiliar para ser reutilizado pelo TransacaoService
     public Usuario buscarPorId(Long id) {
         return repository.findById(id)
