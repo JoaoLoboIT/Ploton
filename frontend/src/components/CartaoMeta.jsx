@@ -6,70 +6,50 @@ function CartaoMeta({ meta, aoAtualizar }) {
     const [valorOperacao, setValorOperacao] = useState('');
 
     const executarOperacao = (tipoOperacao) => {
-        if (!valorOperacao || valorOperacao <= 0) {
-            alert("Por favor, digite um valor válido maior que zero.");
-            return;
-        }
-
-        // DTO EXATAMENTE como o seu MetaOperacaoDTO.java espera
-        const dto = {
-            valor: parseFloat(valorOperacao),
-            tipo: tipoOperacao // Agora é 'ADICIONAR' ou 'REMOVER'
-        };
-
-        api.patch(`/metas/${meta.id}/saldo`, dto)
-            .then(() => {
-                setValorOperacao('');
-                aoAtualizar(); // Atualiza a lista do Pai
-            })
-            .catch(error => {
-                console.error(`Erro ao fazer ${tipoOperacao}:`, error);
-                alert("Erro na operação. Verifique se o saldo não ficará negativo.");
-            });
+        if (!valorOperacao || valorOperacao <= 0) { alert("Digite um valor válido."); return; }
+        api.patch(`/metas/${meta.id}/saldo`, { valor: parseFloat(valorOperacao), tipo: tipoOperacao })
+            .then(() => { setValorOperacao(''); aoAtualizar(); })
+            .catch(() => alert("Erro na operação. Verifique o saldo."));
     };
 
-    // No seu Java, a classe Meta tem um 'getPorcentagemConcluida()'.
-    // O Spring Boot transforma isso num campo JSON automaticamente!
-    // Se por acaso não vier, temos o cálculo de fallback.
-    const progresso = meta.porcentagemConcluida !== undefined 
-        ? meta.porcentagemConcluida 
-        : (meta.valorAtual / meta.valorAlvo) * 100;
-
+    const progresso = meta.porcentagemConcluida !== undefined ? meta.porcentagemConcluida : (meta.valorAtual / meta.valorAlvo) * 100;
     const progressoFormatado = progresso > 100 ? 100 : Math.round(progresso);
+    
+    // Usei roxo para metas para diferenciar do verde das transações
+    const corBarra = progressoFormatado === 100 ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'bg-purple-600 shadow-[0_0_10px_rgba(147,51,234,0.4)]';
+    const inputStyle = "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/20 text-sm";
 
     return (
-        <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', width: '320px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
-            <h3 style={{ marginTop: 0 }}>{meta.nome}</h3>
-            {meta.descricao && <p style={{ fontSize: '14px', color: '#555', margin: '0 0 10px 0' }}>{meta.descricao}</p>}
+        // ESTILO DO CARTÃO DARK
+        <div className="bg-gray-900 p-6 rounded-2xl border border-gray-800 shadow-xl w-[340px] hover:border-purple-500/30 transition-all duration-300">
+            <h3 className="text-xl font-bold text-white font-tech mb-1 flex items-center justify-between">
+                {meta.nome}
+                {progressoFormatado === 100 && <span className="text-emerald-400 text-sm">✓ Concluído</span>}
+            </h3>
+            {meta.descricao && <p className="text-sm text-gray-500 mb-4 line-clamp-2" title={meta.descricao}>{meta.descricao}</p>}
             
-            {/* Usando os nomes exatos da sua Entity Meta.java */}
-            <p style={{ margin: '5px 0' }}><strong>Alvo:</strong> R$ {meta.valorAlvo}</p>
-            <p style={{ margin: '5px 0', color: '#0056b3' }}><strong>Guardado:</strong> R$ {meta.valorAtual}</p>
-            <p style={{ margin: '5px 0', fontSize: '12px', color: '#666' }}>Data limite: {meta.dataLimite}</p>
-            
-            {/* BARRA DE PROGRESSO */}
-            <div style={{ width: '100%', backgroundColor: '#e9ecef', height: '15px', borderRadius: '10px', margin: '15px 0', overflow: 'hidden' }}>
-                <div style={{ width: `${progressoFormatado}%`, backgroundColor: progressoFormatado === 100 ? '#28a745' : '#6f42c1', height: '100%', transition: 'width 0.5s' }}></div>
+            <div className="space-y-2 mb-4 font-medium">
+                <p className="text-gray-400 text-sm">Alvo: <span className="text-white font-tech text-base">R$ {meta.valorAlvo}</span></p>
+                <p className="text-gray-400 text-sm">Guardado: <span className="text-purple-400 font-bold font-tech text-lg">R$ {meta.valorAtual}</span></p>
+                <p className="text-gray-500 text-xs">Data limite: {meta.dataLimite}</p>
             </div>
-            <p style={{ textAlign: 'right', margin: '-10px 0 15px 0', fontSize: '12px', fontWeight: 'bold' }}>{progressoFormatado}%</p>
-
-            <hr style={{ border: 'none', borderTop: '1px solid #eee', marginBottom: '15px' }} />
             
-            <div style={{ display: 'flex', gap: '5px', flexDirection: 'column' }}>
-                <input 
-                    type="number" 
-                    step="0.01" 
-                    placeholder="R$ 0,00" 
-                    value={valorOperacao} 
-                    onChange={(e) => setValorOperacao(e.target.value)} 
-                    style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-                />
-                <div style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
-                    {/* Alinhado com o backend: ADICIONAR e REMOVER */}
-                    <button onClick={() => executarOperacao('ADICIONAR')} style={{ flex: 1, padding: '8px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+            {/* BARRA DE PROGRESSO TECH */}
+            <div className="w-full bg-gray-800 h-3 rounded-full mb-1 overflow-hidden border border-gray-700/50">
+                <div className={`h-full rounded-full transition-all duration-700 ease-out ${corBarra}`} style={{ width: `${progressoFormatado}%` }}></div>
+            </div>
+            <p className="text-right text-xs font-bold text-purple-400 font-tech">{progressoFormatado}%</p>
+
+            <hr className="border-t border-gray-800 my-4" />
+            
+            {/* ÁREA DE OPERAÇÃO DARK */}
+            <div className="flex flex-col gap-3">
+                <input type="number" step="0.01" placeholder="R$ 0.00" value={valorOperacao} onChange={(e) => setValorOperacao(e.target.value)} className={inputStyle} />
+                <div className="flex gap-2">
+                    <button onClick={() => executarOperacao('ADICIONAR')} className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-md text-sm transition-all active:scale-95">
                         + Guardar
                     </button>
-                    <button onClick={() => executarOperacao('REMOVER')} style={{ flex: 1, padding: '8px', backgroundColor: '#dc3545', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                    <button onClick={() => executarOperacao('REMOVER')} className="flex-1 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-md text-sm transition-all active:scale-95">
                         - Retirar
                     </button>
                 </div>

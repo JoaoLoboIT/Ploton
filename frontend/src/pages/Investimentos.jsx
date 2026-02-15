@@ -1,210 +1,222 @@
 // src/pages/Investimentos.jsx
-
 import { useState, useEffect, useContext } from 'react';
 import api from '../services/api';
-
-// 1. IMPORTAMOS O CONTEXTO GLOBAL
 import { AuthContext } from '../contexts/AuthContext';
 
 function Investimentos() {
-    // 2. EXTRAÍMOS O UTILIZADOR LOGADO DA NUVEM
     const { usuarioLogado } = useContext(AuthContext);
-
-    // ==========================================
-    // ESTADOS DA TELA
-    // ==========================================
     const [investimentos, setInvestimentos] = useState([]);
     const [carregando, setCarregando] = useState(true);
 
-    // 3. REMOVEMOS O usuarioId FIXO
-    const [novoAtivo, setNovoAtivo] = useState({
-        nome: '',
-        tipo: 'RENDA_FIXA'
-    });
-
-    const [novaMovimentacao, setNovaMovimentacao] = useState({
+    const [novoAtivo, setNovoAtivo] = useState({ nome: '', tipo: 'RENDA_FIXA' });
+    
+    // O NOVO ESTADO DA CENTRAL DE OPERAÇÕES
+    const [operacao, setOperacao] = useState({ 
         investimentoId: '', 
-        valor: '',
-        tipo: 'APORTE',     
-        data: ''
+        tipoOperacao: 'APORTE', // Pode ser 'APORTE' ou 'RENDIMENTO'
+        valor: '' 
     });
 
-    // ==========================================
-    // LÓGICA DE BUSCA (READ)
-    // ==========================================
     const buscarInvestimentos = () => {
-        // 4. USAMOS O ID DINÂMICO NA URL
-        api.get(`/investimentos/usuario/${usuarioLogado.id}`)
-            .then(response => {
-                setInvestimentos(response.data);
-                setCarregando(false);
-            })
-            .catch(error => {
-                console.error("Erro ao buscar carteira:", error);
-                setCarregando(false);
-            });
+        if(usuarioLogado) {
+            api.get(`/investimentos/usuario/${usuarioLogado.id}`)
+                .then(response => { 
+                    setInvestimentos(response.data); 
+                    setCarregando(false); 
+                })
+                .catch(error => { 
+                    console.error("Erro:", error); 
+                    setCarregando(false); 
+                });
+        }
     };
 
-    // 5. ATUALIZAMOS A LISTA SEMPRE QUE O UTILIZADOR MUDAR
-    useEffect(() => {
-        buscarInvestimentos();
-    }, [usuarioLogado.id]);
+    useEffect(() => { buscarInvestimentos(); }, [usuarioLogado]);
 
-    // ==========================================
-    // LÓGICA DE CRIAÇÃO DO ATIVO (CREATE POT)
-    // ==========================================
-    const lidarComMudancaAtivo = (evento) => {
-        const { name, value } = evento.target;
-        setNovoAtivo({ ...novoAtivo, [name]: value });
-    };
+    const lidarComMudancaAtivo = (e) => setNovoAtivo({ ...novoAtivo, [e.target.name]: e.target.value });
+    const lidarComMudancaOperacao = (e) => setOperacao({ ...operacao, [e.target.name]: e.target.value });
 
-    const submeterAtivo = (evento) => {
-        evento.preventDefault();
-
-        // 6. INJETAMOS O ID DO USUÁRIO NO DTO DE ENVIO
-        const dtoEnvio = {
-            ...novoAtivo,
-            usuarioId: usuarioLogado.id
-        };
-
-        api.post('/investimentos', dtoEnvio)
-            .then(response => {
-                alert("Novo ativo adicionado!");
+    // 1. CRIAR NOVO ATIVO
+    const submeterAtivo = (e) => {
+        e.preventDefault();
+        api.post('/investimentos', { ...novoAtivo, usuarioId: usuarioLogado.id })
+            .then(() => {
+                alert("Ativo adicionado à sua carteira!");
                 setNovoAtivo({ nome: '', tipo: 'RENDA_FIXA' });
                 buscarInvestimentos();
             })
-            .catch(error => {
-                console.error("Erro ao criar ativo:", error);
-                alert("Erro ao criar o investimento.");
-            });
+            .catch(() => alert("Erro ao criar o investimento."));
     };
 
-    // ==========================================
-    // LÓGICA DA MOVIMENTAÇÃO (UPDATE BALANCE)
-    // ==========================================
-    const lidarComMudancaMovimentacao = (evento) => {
-        const { name, value } = evento.target;
-        setNovaMovimentacao({ ...novaMovimentacao, [name]: value });
-    };
-
-    const submeterMovimentacao = (evento) => {
-        evento.preventDefault();
+    // 2. A MÁGICA DA NOVA ARQUITETURA: APORTE VS RENDIMENTO
+    const submeterOperacao = (e) => {
+        e.preventDefault();
         
-        // 7. GARANTIMOS QUE O VALOR VÁ COMO NÚMERO (FLOAT)
-        const dtoEnvio = {
-            ...novaMovimentacao,
-            valor: parseFloat(novaMovimentacao.valor)
-        };
+        const valorNumerico = parseFloat(operacao.valor);
+        const id = operacao.investimentoId;
 
-        api.post('/investimentos/movimentacao', dtoEnvio)
-            .then(response => {
-                alert("Movimentação registrada com sucesso!");
-                setNovaMovimentacao({ investimentoId: '', valor: '', tipo: 'APORTE', data: '' });
-                buscarInvestimentos();
+        if (!id || isNaN(valorNumerico) || valorNumerico <= 0) {
+            alert("Preencha os dados corretamente.");
+            return;
+        }
+
+        const endpoint = operacao.tipoOperacao === 'APORTE' 
+            ? `/investimentos/${id}/aporte` 
+            : `/investimentos/${id}/rendimento`;
+
+        // Mandamos o nosso OperacaoInvestimentoDTO para o Java!
+        api.patch(endpoint, { valor: valorNumerico })
+            .then(() => {
+                alert(operacao.tipoOperacao === 'APORTE' ? "Aporte realizado com sucesso!" : "Rendimento atualizado!");
+                setOperacao({ investimentoId: '', tipoOperacao: 'APORTE', valor: '' });
+                buscarInvestimentos(); // Atualiza a tabela na hora
             })
-            .catch(error => {
-                console.error("Erro ao movimentar:", error);
-                alert("Erro ao registrar a movimentação.");
-            });
+            .catch(() => alert("Erro ao registrar a operação."));
     };
 
-    if (carregando) return <p>A carregar a sua carteira...</p>;
+    const formatarDinheiro = (valor) => {
+        return (valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    };
 
-    // ==========================================
-    // RENDERIZAÇÃO DA TELA (JSX)
-    // ==========================================
+    if (carregando) return <p className="text-gray-400 animate-pulse">A carregar a sua carteira de ativos...</p>;
+
+    const labelStyle = "block text-sm font-medium text-gray-400 mb-1 font-tech tracking-wide";
+    const inputStyle = "w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all";
+    const cardStyle = "bg-gray-900 p-8 rounded-2xl border border-gray-800 shadow-xl mb-8 relative overflow-hidden";
+
     return (
         <div>
-            <h1>Meus Investimentos</h1>
+            <h1 className="text-3xl font-bold mb-8 font-tech text-white">Meus Investimentos</h1>
 
-            {/* FORMULÁRIO 1: CRIAR ATIVO (A Caixinha) */}
-            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', marginBottom: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                <h2>1. Cadastrar Novo Ativo</h2>
-                <form onSubmit={submeterAtivo} style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <label>Nome do Ativo</label>
-                        <input type="text" name="nome" value={novoAtivo.nome} onChange={lidarComMudancaAtivo} required />
+            {/* FORMULÁRIO 1: CRIAR ATIVO */}
+            <div className={cardStyle}>
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl"></div>
+                <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2 relative z-10">
+                    <span className="text-purple-500">🏦</span> Cadastrar Novo Ativo
+                </h2>
+                <form onSubmit={submeterAtivo} className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end relative z-10">
+                    <div className="md:col-span-1">
+                        <label className={labelStyle}>Nome do Ativo</label>
+                        <input type="text" name="nome" value={novoAtivo.nome} onChange={lidarComMudancaAtivo} required className={inputStyle} placeholder="Ex: Tesouro Direto 2029" />
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <label>Tipo</label>
-                        <select name="tipo" value={novoAtivo.tipo} onChange={lidarComMudancaAtivo}>
+                    <div>
+                        <label className={labelStyle}>Tipo</label>
+                        <select name="tipo" value={novoAtivo.tipo} onChange={lidarComMudancaAtivo} className={inputStyle}>
                             <option value="RENDA_FIXA">Renda Fixa</option>
                             <option value="ACOES">Ações</option>
                             <option value="FII">Fundos Imobiliários</option>
                             <option value="CRIPTOMOEDAS">Criptomoedas</option>
                         </select>
                     </div>
-                    <button type="submit" style={{ padding: '10px 20px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                        Criar Carteira
+                    <button type="submit" className="h-[50px] bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg px-6 shadow-[0_0_15px_rgba(168,85,247,0.2)] active:scale-95 transition-all">
+                        Adicionar à Carteira
                     </button>
                 </form>
             </div>
 
-            {/* TABELA DE ATIVOS */}
-            <table border="1" cellPadding="10" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', backgroundColor: '#fff', marginBottom: '20px' }}>
-                <thead>
-                    <tr style={{ backgroundColor: '#e0e0e0' }}>
-                        <th>Nome do Ativo</th>
-                        <th>Tipo</th>
-                        <th>Saldo Atual (R$)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {investimentos.length === 0 ? (
-                        <tr><td colSpan="3" style={{ textAlign: 'center' }}>Nenhum investimento cadastrado.</td></tr>
-                    ) : (
-                        investimentos.map((inv) => (
-                            <tr key={inv.id}>
-                                <td>{inv.nome}</td>
-                                <td>{inv.tipo}</td>
-                                <td style={{ color: '#0056b3', fontWeight: 'bold' }}>{inv.saldo}</td>
+            {/* TABELA DE ATIVOS: AGORA COM LUCRO/PREJUÍZO */}
+            <div className="bg-gray-900 rounded-2xl border border-gray-800 shadow-xl mb-8 overflow-hidden">
+                <div className="p-6 border-b border-gray-800 bg-gray-800/30">
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                        <span className="text-gray-400">📋</span> Posição Consolidada da Carteira
+                    </h2>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-gray-800/50 text-gray-400 font-tech uppercase text-xs tracking-wider">
+                                <th className="p-4 border-b border-gray-700">Nome do Ativo</th>
+                                <th className="p-4 border-b border-gray-700">Valor Investido</th>
+                                <th className="p-4 border-b border-gray-700">Saldo Atual (Mercado)</th>
+                                <th className="p-4 border-b border-gray-700 text-right">Rentabilidade</th>
                             </tr>
-                        ))
-                    )}
-                </tbody>
-            </table>
+                        </thead>
+                        <tbody className="text-gray-300">
+                            {investimentos.length === 0 ? (
+                                <tr><td colSpan="4" className="p-6 text-center text-gray-500 italic">Nenhum investimento cadastrado.</td></tr>
+                            ) : (
+                                investimentos.map((inv) => {
+                                    const investido = inv.valorInvestido || 0;
+                                    const mercado = inv.saldo || 0;
+                                    const lucroReais = mercado - investido;
+                                    const lucroPercentual = investido > 0 ? (lucroReais / investido) * 100 : 0;
+                                    
+                                    const isPositivo = lucroReais >= 0;
+                                    const corLucro = isPositivo ? 'text-emerald-400' : 'text-red-400';
 
-            {/* FORMULÁRIO 2: A "TORNEIRA" (Aportes e Resgates) */}
-            <div style={{ backgroundColor: '#f9f9ff', padding: '20px', borderRadius: '8px', border: '1px solid #d0d0ff' }}>
-                <h2>2. Registrar Movimentação (Aporte/Resgate)</h2>
-                <form onSubmit={submeterMovimentacao} style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                                    return (
+                                        <tr key={inv.id} className="hover:bg-gray-800/40 transition-colors">
+                                            <td className="p-4 border-b border-gray-800">
+                                                <p className="font-medium text-white">{inv.nome}</p>
+                                                <span className="text-[10px] text-purple-400 uppercase tracking-widest">{inv.tipo}</span>
+                                            </td>
+                                            <td className="p-4 border-b border-gray-800 font-tech text-gray-400">
+                                                {formatarDinheiro(investido)}
+                                            </td>
+                                            <td className="p-4 border-b border-gray-800 font-bold font-tech text-lg text-white">
+                                                {formatarDinheiro(mercado)}
+                                            </td>
+                                            <td className={`p-4 border-b border-gray-800 text-right font-bold font-tech ${corLucro}`}>
+                                                <p>{isPositivo ? '+' : ''}{formatarDinheiro(lucroReais)}</p>
+                                                <p className="text-xs opacity-80">{isPositivo ? '+' : ''}{lucroPercentual.toFixed(2)}%</p>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* FORMULÁRIO 2: CENTRAL DE OPERAÇÕES */}
+            <div className={cardStyle}>
+                <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl transition-colors duration-500 ${operacao.tipoOperacao === 'APORTE' ? 'bg-blue-500/10' : 'bg-emerald-500/10'}`}></div>
+                
+                <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2 relative z-10">
+                    <span className={operacao.tipoOperacao === 'APORTE' ? "text-blue-500" : "text-emerald-500"}>⚡</span> 
+                    Painel de Operações
+                </h2>
+
+                <form onSubmit={submeterOperacao} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end relative z-10">
                     
-                    <div style={{ display: 'flex', flexDirection: 'column', minWidth: '200px' }}>
-                        <label>Selecione o Ativo</label>
-                        <select name="investimentoId" value={novaMovimentacao.investimentoId} onChange={lidarComMudancaMovimentacao} required>
+                    {/* SELETOR DE OPERAÇÃO: APORTE OU RENDIMENTO */}
+                    <div className="lg:col-span-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700 flex gap-4">
+                        <label className="flex items-center gap-2 text-white cursor-pointer">
+                            <input type="radio" name="tipoOperacao" value="APORTE" checked={operacao.tipoOperacao === 'APORTE'} onChange={lidarComMudancaOperacao} className="accent-blue-500 w-5 h-5" />
+                            Novo Aporte (+ Dinheiro)
+                        </label>
+                        <label className="flex items-center gap-2 text-white cursor-pointer ml-6">
+                            <input type="radio" name="tipoOperacao" value="RENDIMENTO" checked={operacao.tipoOperacao === 'RENDIMENTO'} onChange={lidarComMudancaOperacao} className="accent-emerald-500 w-5 h-5" />
+                            Atualizar Valor de Mercado
+                        </label>
+                    </div>
+
+                    <div className="lg:col-span-2">
+                        <label className={labelStyle}>Selecione o Ativo</label>
+                        <select name="investimentoId" value={operacao.investimentoId} onChange={lidarComMudancaOperacao} required className={inputStyle}>
                             <option value="">-- Escolha um ativo --</option>
                             {investimentos.map(inv => (
                                 <option key={inv.id} value={inv.id}>
-                                    {inv.nome} (Saldo: R$ {inv.saldo})
+                                    {inv.nome} (Investido: R$ {inv.valorInvestido || 0} | Mercado: R$ {inv.saldo})
                                 </option>
                             ))}
                         </select>
                     </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <label>Tipo de Movimentação</label>
-                        <select name="tipo" value={novaMovimentacao.tipo} onChange={lidarComMudancaMovimentacao} required>
-                            <option value="APORTE">Aporte (Colocar Dinheiro)</option>
-                            <option value="RESGATE">Resgate (Tirar Dinheiro)</option>
-                        </select>
+                    
+                    <div className="lg:col-span-2">
+                        <label className={labelStyle}>
+                            {operacao.tipoOperacao === 'APORTE' ? 'Valor do Aporte (R$)' : 'Novo Valor de Mercado (R$)'}
+                        </label>
+                        <input type="number" step="0.01" name="valor" value={operacao.valor} onChange={lidarComMudancaOperacao} required className={inputStyle} 
+                               placeholder={operacao.tipoOperacao === 'APORTE' ? "Ex: 500.00" : "Ex: 1100.00"} />
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <label>Valor (R$)</label>
-                        <input type="number" step="0.01" name="valor" value={novaMovimentacao.valor} onChange={lidarComMudancaMovimentacao} required />
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <label>Data</label>
-                        <input type="date" name="data" value={novaMovimentacao.data} onChange={lidarComMudancaMovimentacao} required />
-                    </div>
-
-                    <button type="submit" style={{ padding: '10px 20px', backgroundColor: '#0056b3', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                        Confirmar
+                    <button type="submit" className={`lg:col-span-4 h-[50px] text-white font-bold rounded-lg px-6 active:scale-95 transition-all flex justify-center items-center gap-2 shadow-lg ${operacao.tipoOperacao === 'APORTE' ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/20' : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/20'}`}>
+                        {operacao.tipoOperacao === 'APORTE' ? '💾 Confirmar Aporte' : '📈 Registrar Rendimento'}
                     </button>
                 </form>
             </div>
-
         </div>
     );
 }

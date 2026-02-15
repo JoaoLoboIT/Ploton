@@ -4,10 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 function Cadastro() {
-    // Estado espelhando o UsuarioRequestDTO do Java
     const [novoUsuario, setNovoUsuario] = useState({ nome: '', email: '', senha: '' });
     const [erro, setErro] = useState('');
-    
     const navegar = useNavigate();
 
     const lidarComMudanca = (evento) => {
@@ -18,53 +16,54 @@ function Cadastro() {
     const fazerCadastro = (evento) => {
         evento.preventDefault();
         setErro('');
-
-        // Dispara para a rota raiz de usuários (que cria a conta)
         api.post('/usuarios', novoUsuario)
             .then(() => {
                 alert("Conta criada com sucesso! Faça login para continuar.");
-                navegar('/'); // Redireciona de volta para a tela de Login
+                navegar('/');
             })
             .catch(error => {
                 console.error("Erro no cadastro:", error);
-                // Pode dar erro se o email já existir no banco (devido ao unique=true)
                 setErro("Erro ao criar conta. Este email já pode estar em uso.");
             });
     };
 
+    const inputStyle = "w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20";
+
     return (
-        <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f4f5f7' }}>
-            <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px' }}>
-                <h1 style={{ textAlign: 'center', marginBottom: '10px', color: '#333' }}>Criar Conta</h1>
-                <p style={{ textAlign: 'center', color: '#666', marginBottom: '30px' }}>Junte-se ao Ploton e organize suas finanças</p>
+        <div className="h-screen flex justify-center items-center bg-[#0b0f19]">
+            <div className="bg-gray-900 p-10 rounded-2xl border border-gray-800 shadow-2xl w-full max-w-sm">
                 
-                <form onSubmit={fazerCadastro} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <label style={{ marginBottom: '5px', fontWeight: 'bold' }}>Nome Completo</label>
-                        <input type="text" name="nome" value={novoUsuario.nome} onChange={lidarComMudanca} required style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                <h1 className="text-2xl font-bold text-center text-white mb-2 font-tech tracking-wider">Novo Operador</h1>
+                
+                <form onSubmit={fazerCadastro} className="flex flex-col gap-5">
+                    <div className="flex flex-col">
+                        <label className="mb-1 text-sm font-medium text-gray-400 font-tech">Nome Completo</label>
+                        <input type="text" name="nome" value={novoUsuario.nome} onChange={lidarComMudanca} required className={inputStyle} />
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <label style={{ marginBottom: '5px', fontWeight: 'bold' }}>Email</label>
-                        <input type="email" name="email" value={novoUsuario.email} onChange={lidarComMudanca} required style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                    <div className="flex flex-col">
+                        <label className="mb-1 text-sm font-medium text-gray-400 font-tech">Email</label>
+                        <input type="email" name="email" value={novoUsuario.email} onChange={lidarComMudanca} required className={inputStyle} />
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <label style={{ marginBottom: '5px', fontWeight: 'bold' }}>Senha</label>
-                        <input type="password" name="senha" value={novoUsuario.senha} onChange={lidarComMudanca} required minLength="4" style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                    <div className="flex flex-col">
+                        <label className="mb-1 text-sm font-medium text-gray-400 font-tech">Senha</label>
+                        <input type="password" name="senha" value={novoUsuario.senha} onChange={lidarComMudanca} required minLength="4" className={inputStyle} />
                     </div>
 
-                    {erro && <p style={{ color: 'red', fontSize: '14px', margin: 0 }}>{erro}</p>}
+                    {erro && <p className="text-red-400 text-sm font-semibold text-center bg-red-400/10 p-2 rounded">{erro}</p>}
 
-                    <button type="submit" style={{ padding: '12px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', marginTop: '10px' }}>
+                    <button type="submit" className="w-full mt-2 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] active:scale-95">
                         Cadastrar
                     </button>
                 </form>
 
-                <div style={{ marginTop: '20px', textAlign: 'center' }}>
-                    <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>
-                        Já tem uma conta? <span style={{ color: '#0056b3', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' }} onClick={() => navegar('/')}>Voltar ao Login</span>
+                <div className="mt-8 text-center border-t border-gray-800 pt-6">
+                    <p className="text-sm text-gray-500">
+                        Já tem uma conta?{' '}
+                        <span onClick={() => navegar('/')} className="text-emerald-400 font-bold cursor-pointer hover:underline">
+                            Voltar ao Login
+                        </span>
                     </p>
                 </div>
             </div>

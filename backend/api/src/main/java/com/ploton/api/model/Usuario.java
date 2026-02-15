@@ -2,6 +2,7 @@ package com.ploton.api.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -22,13 +23,17 @@ public class Usuario {
     @Column(nullable = false)
     private String senha;
 
-    // updatable = false impede alteração da data de criação via update
+    @Column(name = "saldo_manual")
+    private BigDecimal saldoManual = BigDecimal.ZERO;
+
     @Column(name = "data_criacao", nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 
     @PrePersist
     protected void onCreate() {
-        // Define timestamp atual do servidor antes de persistir no banco
         this.dataCriacao = LocalDateTime.now();
+        if (this.saldoManual == null) {
+            this.saldoManual = BigDecimal.ZERO;
+        }
     }
 }

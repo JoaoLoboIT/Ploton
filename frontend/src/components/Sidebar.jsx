@@ -1,52 +1,82 @@
 // src/components/Sidebar.jsx
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
-
-// 1. IMPORTAMOS O CONTEXTO PARA PODER FAZER LOGOUT
 import { AuthContext } from '../contexts/AuthContext';
 
 function Sidebar() {
-    // 2. EXTRAÍMOS A FUNÇÃO DE SAIR DA NUVEM GLOBAL
     const { sair } = useContext(AuthContext);
     const navegar = useNavigate();
+    
+    // 1. O HOOK USELOCATION: Diz-nos exatamente em qual URL estamos agora!
+    const localizacao = useLocation(); 
 
     const fazerLogout = () => {
-        sair(); // Limpa a memória do React
-        navegar('/'); // Atira o utilizador de volta para o ecrã de Login
+        sair();
+        navegar('/');
     };
 
-    // 3. A MAGIA DO TAILWIND NUMA VARIÁVEL
-    // Em vez de repetir classes em todo o link, guardamos numa string.
-    // text-gray-400 = Cinza claro | hover:text-white = Fica branco ao passar o rato | transition-colors = Suaviza a troca de cor
-    const estiloLink = "text-gray-400 hover:text-white text-lg font-medium transition-colors duration-200";
+    // 2. A LISTA DE MENUS (Melhor Prática de React - Evita repetição de código)
+    // Adicionamos ícones em texto/emoji simples por agora para dar um charme visual
+    const itensMenu = [
+        { caminho: '/dashboard', rotulo: 'Visão Geral', icone: '◱' },
+        { caminho: '/transacoes', rotulo: 'Transações', icone: '⇄' },
+        { caminho: '/cartoes', rotulo: 'Cartões', icone: '💳' }, // <-- NOVA LINHA AQUI
+        { caminho: '/investimentos', rotulo: 'Investimentos', icone: '📈' },
+        { caminho: '/metas', rotulo: 'Metas', icone: '🎯' },
+    ];
 
     return (
-        // w-64 = Largura fixa | h-screen = 100% da altura da tela | bg-gray-900 = Fundo muito escuro | justify-between = Empurra o menu para cima e o botão de sair para baixo
-        <aside className="w-64 h-screen bg-gray-900 text-white p-6 flex flex-col justify-between shadow-xl">
+        // bg-[#06090f] = Um tom ainda mais escuro que o body para criar profundidade
+        // border-r border-gray-800 = Uma linha divisória subtil à direita
+        <aside className="w-64 min-h-screen bg-[#06090f] border-r border-gray-800 flex flex-col justify-between shadow-2xl">
             
-            <div>
-                {/* Título com uma cor azul vibrante do Tailwind */}
-                <h2 className="text-3xl font-bold mb-10 text-blue-500 tracking-wider">Ploton</h2>
-                
-                <nav className="flex flex-col gap-5">
-                    {/* O LINK CORRIGIDO PARA /dashboard */}
-                    <Link to="/dashboard" className={estiloLink}>Visão Geral</Link>
-                    
-                    <Link to="/transacoes" className={estiloLink}>Transações</Link>
-                    <Link to="/investimentos" className={estiloLink}>Investimentos</Link>
-                    
-                    {/* O NOME ALTERADO PARA "Metas" */}
-                    <Link to="/metas" className={estiloLink}>Metas</Link>
+            <div className="p-6">
+                {/* LOGO DA MARCA */}
+                <div className="flex items-center gap-3 mb-12">
+                    {/* O quadrado verde com efeito de brilho (shadow) */}
+                    <div className="w-8 h-8 rounded bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)] flex items-center justify-center font-bold text-white">
+                        P
+                    </div>
+                    {/* A fonte tech brilhante que importamos */}
+                    <h2 className="text-3xl font-bold text-emerald-400 tracking-widest font-tech">
+                        PLOTON
+                    </h2>
+                </div>
+
+                {/* NAVEGAÇÃO DESENHADA COM MAP */}
+                <nav className="flex flex-col gap-2">
+                    {itensMenu.map((item) => {
+                        // Verificamos se a URL atual é igual ao caminho deste menu
+                        const estaAtivo = localizacao.pathname === item.caminho;
+
+                        return (
+                            <Link
+                                key={item.caminho}
+                                to={item.caminho}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-300 ${
+                                    estaAtivo
+                                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[inset_0_0_10px_rgba(16,185,129,0.05)]' // Estilo quando está selecionado (Aceso)
+                                        : 'text-gray-400 hover:bg-gray-800/50 hover:text-gray-200' // Estilo padrão apagado
+                                }`}
+                            >
+                                <span className="text-xl opacity-80">{item.icone}</span>
+                                {item.rotulo}
+                            </Link>
+                        );
+                    })}
                 </nav>
             </div>
             
-            {/* O NOVO BOTÃO DE LOGOUT NO FUNDO DA SIDEBAR */}
-            <button 
-                onClick={fazerLogout} 
-                className="text-left text-red-400 hover:text-red-300 font-medium transition-colors duration-200 mt-8 py-2"
-            >
-                ← Sair da Conta
-            </button>
+            {/* ZONA INFERIOR: LOGOUT */}
+            <div className="p-6 border-t border-gray-800">
+                <button 
+                    onClick={fazerLogout} 
+                    className="flex items-center gap-3 w-full px-4 py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-all duration-300 font-medium"
+                >
+                    <span className="text-xl">⎋</span>
+                    Sair da Conta
+                </button>
+            </div>
             
         </aside>
     );

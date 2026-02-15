@@ -14,13 +14,18 @@ public class Investimento {
     private Long id;
 
     @Column(nullable = false)
-    private String nome; //
+    private String nome;
 
     @Column(nullable = false)
-    private String tipo; //
+    private String tipo;
 
+    // Valor de mercado atual (quanto o banco diz que você tem)
     @Column(nullable = false)
     private BigDecimal saldo = BigDecimal.ZERO;
+
+    // NOVO CAMPO: Quanto dinheiro efetivamente saiu do seu bolso
+    @Column(name = "valor_investido")
+    private BigDecimal valorInvestido = BigDecimal.ZERO;
 
     @Column(name = "data_criacao", nullable = false)
     private LocalDate dataCriacao = LocalDate.now();
@@ -44,6 +49,10 @@ public class Investimento {
 
     public BigDecimal getSaldo() { return saldo; }
     public void setSaldo(BigDecimal saldo) { this.saldo = saldo; }
+
+    // Novos Getters e Setters para o Valor Investido!
+    public BigDecimal getValorInvestido() { return valorInvestido; }
+    public void setValorInvestido(BigDecimal valorInvestido) { this.valorInvestido = valorInvestido; }
 
     public LocalDate getDataCriacao() { return dataCriacao; }
     public void setDataCriacao(LocalDate dataCriacao) { this.dataCriacao = dataCriacao; }

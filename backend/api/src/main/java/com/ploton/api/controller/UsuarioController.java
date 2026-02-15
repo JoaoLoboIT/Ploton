@@ -1,4 +1,3 @@
-// api/src/main/java/com/ploton/api/controller/UsuarioController.java
 package com.ploton.api.controller;
 
 import com.ploton.api.dto.LoginDTO;
@@ -11,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/usuarios")
-@CrossOrigin(origins = "*") // ⚠️ SUPER IMPORTANTE PARA O REACT ACESSAR!
+@CrossOrigin(origins = "*")
 public class UsuarioController {
 
     private final UsuarioService service;
@@ -26,16 +25,19 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(novoUsuario);
     }
 
-    // A NOVA ROTA DE LOGIN
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO dto) {
         try {
             Usuario usuarioLogado = service.fazerLogin(dto.email(), dto.senha());
-            // Se der certo, devolve o usuário (Status 200 OK)
             return ResponseEntity.ok(usuarioLogado);
         } catch (RuntimeException e) {
-            // Se der erro (senha errada ou email não achou), devolve Status 401 Unauthorized
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
+    }
+
+    @PatchMapping("/{id}/saldo")
+    public ResponseEntity<Usuario> atualizarSaldo(@PathVariable Long id, @RequestBody com.ploton.api.dto.UsuarioSaldoRequestDTO dto) {
+        Usuario usuarioAtualizado = service.atualizarSaldoManual(id, dto.saldoManual());
+        return ResponseEntity.ok(usuarioAtualizado);
     }
 }

@@ -3,17 +3,17 @@ package com.ploton.api.repository;
 import com.ploton.api.model.Fatura;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface FaturaRepository extends JpaRepository<Fatura, Long> {
 
-    // Busca uma fatura específica de um cartão por mês e ano
-    // O Optional é usado porque a fatura pode ainda não ter sido criada
     Optional<Fatura> findByCartaoIdAndMesAndAno(Long cartaoId, Integer mes, Integer ano);
-
-    // Lista todas as faturas de um cartão para gerar gráficos de histórico
     List<Fatura> findByCartaoId(Long cartaoId);
+    @Query("SELECT COALESCE(SUM(f.valorTotal), 0) FROM Fatura f WHERE f.cartao.usuario.id = :usuarioId AND f.mes = :mes AND f.ano = :ano")
+    BigDecimal calcularTotalFaturasDoMes(@Param("usuarioId") Long usuarioId, @Param("mes") Integer mes, @Param("ano") Integer ano);
 }

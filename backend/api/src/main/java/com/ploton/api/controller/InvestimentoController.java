@@ -41,7 +41,20 @@ public class InvestimentoController {
     public ResponseEntity<MovimentacaoInvestimento> movimentar(@RequestBody MovimentacaoRequestDTO dto) {
         MovimentacaoInvestimento mov = service.registrarMovimentacao(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(mov);
+
     }
 
+    @PatchMapping("/{id}/aporte")
+    public ResponseEntity<Investimento> fazerAporte(
+            @PathVariable Long id,
+            @RequestBody com.ploton.api.dto.OperacaoInvestimentoDTO dto) {
+        return ResponseEntity.ok(service.fazerAporte(id, dto.valor()));
+    }
 
+    @PatchMapping("/{id}/rendimento")
+    public ResponseEntity<Investimento> atualizarRendimento(
+            @PathVariable Long id,
+            @RequestBody com.ploton.api.dto.OperacaoInvestimentoDTO dto) {
+        return ResponseEntity.ok(service.atualizarValorMercado(id, dto.valor()));
+    }
 }

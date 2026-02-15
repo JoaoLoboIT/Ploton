@@ -8,6 +8,7 @@ import com.ploton.api.model.TipoMovimentacao;
 import com.ploton.api.model.Usuario;
 import com.ploton.api.repository.InvestimentoRepository;
 import com.ploton.api.repository.MovimentacaoInvestimentoRepository;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,6 +63,33 @@ public class InvestimentoService {
         investimentoRepository.save(investimento);
 
         return movSalva;
+    }
+    @Transactional
+    public Investimento fazerAporte(Long id, BigDecimal valorAporte) {
+
+        Investimento inv = investimentoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Investimento não encontrado"));
+
+        if (inv.getValorInvestido() == null) {
+            inv.setValorInvestido(BigDecimal.ZERO);
+        }
+
+        // Aporte soma no dinheiro tirado do bolso e no saldo total
+        inv.setValorInvestido(inv.getValorInvestido().add(valorAporte));
+        inv.setSaldo(inv.getSaldo().add(valorAporte));
+
+        return investimentoRepository.save(inv);
+    }
+
+    @Transactional
+    public Investimento atualizarValorMercado(Long id, BigDecimal novoSaldo) {
+        Investimento inv = investimentoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Investimento não encontrado"));
+
+        // Atualizar mercado muda APENAS o saldo atual, não mexe no valor aportado
+        inv.setSaldo(novoSaldo);
+
+        return investimentoRepository.save(inv);
     }
 
     private void atualizarSaldo(Investimento investimento, BigDecimal valor, TipoMovimentacao tipo) {

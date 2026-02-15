@@ -7,7 +7,6 @@ import { AuthContext } from '../contexts/AuthContext';
 function Login() {
     const [credenciais, setCredenciais] = useState({ email: '', senha: '' });
     const [erro, setErro] = useState('');
-    
     const { setUsuarioLogado } = useContext(AuthContext);
     const navegar = useNavigate();
 
@@ -19,7 +18,6 @@ function Login() {
     const fazerLogin = (evento) => {
         evento.preventDefault();
         setErro('');
-
         api.post('/usuarios/login', credenciais)
             .then(response => {
                 setUsuarioLogado(response.data);
@@ -31,34 +29,44 @@ function Login() {
             });
     };
 
+    const inputStyle = "w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20";
+
     return (
-        <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f4f5f7' }}>
-            <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px' }}>
-                <h1 style={{ textAlign: 'center', marginBottom: '10px', color: '#333' }}>Ploton</h1>
-                <p style={{ textAlign: 'center', color: '#666', marginBottom: '30px' }}>Faça login para gerir as suas finanças</p>
+        <div className="h-screen flex justify-center items-center bg-[#0b0f19]">
+            <div className="bg-gray-900 p-10 rounded-2xl border border-gray-800 shadow-2xl w-full max-w-sm">
                 
-                <form onSubmit={fazerLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <label style={{ marginBottom: '5px', fontWeight: 'bold' }}>Email</label>
-                        <input type="email" name="email" value={credenciais.email} onChange={lidarComMudanca} required style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                {/* Logo Tech */}
+                <div className="flex justify-center mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)] flex items-center justify-center font-bold text-white text-2xl">
+                        P
+                    </div>
+                </div>
+                <h1 className="text-3xl font-bold text-center text-emerald-400 mb-2 font-tech tracking-widest">PLOTON</h1>
+                
+                <form onSubmit={fazerLogin} className="flex flex-col gap-5">
+                    <div className="flex flex-col">
+                        <label className="mb-1 text-sm font-medium text-gray-400 font-tech">Email</label>
+                        <input type="email" name="email" value={credenciais.email} onChange={lidarComMudanca} required className={inputStyle} />
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <label style={{ marginBottom: '5px', fontWeight: 'bold' }}>Senha</label>
-                        <input type="password" name="senha" value={credenciais.senha} onChange={lidarComMudanca} required style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                    <div className="flex flex-col">
+                        <label className="mb-1 text-sm font-medium text-gray-400 font-tech">Senha</label>
+                        <input type="password" name="senha" value={credenciais.senha} onChange={lidarComMudanca} required className={inputStyle} />
                     </div>
 
-                    {erro && <p style={{ color: 'red', fontSize: '14px', margin: 0 }}>{erro}</p>}
+                    {erro && <p className="text-red-400 text-sm font-semibold text-center bg-red-400/10 p-2 rounded">{erro}</p>}
 
-                    <button type="submit" style={{ padding: '12px', backgroundColor: '#0056b3', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', marginTop: '10px' }}>
+                    <button type="submit" className="w-full mt-2 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] active:scale-95">
                         Entrar
                     </button>
                 </form>
 
-                {/* NOVO LINK PARA CADASTRO */}
-                <div style={{ marginTop: '20px', textAlign: 'center' }}>
-                    <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>
-                        Não tem uma conta? <span style={{ color: '#0056b3', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' }} onClick={() => navegar('/cadastro')}>Cadastre-se aqui</span>
+                <div className="mt-8 text-center border-t border-gray-800 pt-6">
+                    <p className="text-sm text-gray-500">
+                        Não tem uma conta?{' '}
+                        <span onClick={() => navegar('/cadastro')} className="text-emerald-400 font-bold cursor-pointer hover:underline">
+                            Cadastre-se
+                        </span>
                     </p>
                 </div>
             </div>

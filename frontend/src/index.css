@@ -1,5 +1,35 @@
 @import "tailwindcss";
+/* Importando as fontes do Google */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap');
 
+/* Reset Global para o Dark Theme */
 body {
-  background-color: #f4f5f7;
+  /* Fundo super escuro, quase preto com um leve tom azulado de tecnologia */
+  background-color: #0b0f19; 
+  /* Texto padrão cinzento claro para não cansar a vista */
+  color: #e2e8f0; 
+  /* Fonte principal de leitura */
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Classe utilitária extra para quando quisermos usar a fonte Tech */
+.font-tech {
+  font-family: 'Rajdhani', sans-serif;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  border: 1px solid #374151; /* border-gray-700 */
+  -webkit-text-fill-color: #ffffff; /* Letra branca */
+  -webkit-box-shadow: 0 0 0px 1000px #1f2937 inset; /* bg-gray-800 */
+  transition: background-color 5000s ease-in-out 0s;
 }

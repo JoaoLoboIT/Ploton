@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import Transacoes from './pages/Transacoes';
 import Investimentos from './pages/Investimentos';
 import Metas from './pages/Metas';
+import Cartoes from './pages/Cartoes';
 
 function RotaProtegidaEComSidebar({ children }) {
   const { usuarioLogado } = useContext(AuthContext);
@@ -19,9 +20,10 @@ function RotaProtegidaEComSidebar({ children }) {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f4f5f7' }}>
+    // Removemos o backgroundColor fixo daqui e trocamos style por className do Tailwind
+    <div className="flex min-h-screen">
       <Sidebar />
-      <main style={{ flex: 1, padding: '30px' }}>
+      <main className="flex-1 p-8">
         {children}
       </main>
     </div>
@@ -33,7 +35,7 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          
+
           {/* ROTAS PÚBLICAS (Sem Sidebar) */}
           <Route path="/" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} /> {/* <-- 2. NOVA ROTA AQUI */}
@@ -44,25 +46,30 @@ function App() {
               <Dashboard />
             </RotaProtegidaEComSidebar>
           } />
-          
+
           <Route path="/transacoes" element={
             <RotaProtegidaEComSidebar>
               <Transacoes />
             </RotaProtegidaEComSidebar>
           } />
-          
+
           <Route path="/investimentos" element={
             <RotaProtegidaEComSidebar>
               <Investimentos />
             </RotaProtegidaEComSidebar>
           } />
-          
+
           <Route path="/metas" element={
             <RotaProtegidaEComSidebar>
               <Metas />
             </RotaProtegidaEComSidebar>
           } />
 
+          <Route path="/cartoes" element={
+            <RotaProtegidaEComSidebar>
+              <Cartoes />
+            </RotaProtegidaEComSidebar>
+          } />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
