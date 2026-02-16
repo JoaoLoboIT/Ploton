@@ -2,11 +2,7 @@ package com.ploton.api.service;
 
 import com.ploton.api.dto.DashboardResponseDTO;
 import com.ploton.api.model.Usuario;
-import com.ploton.api.repository.FaturaRepository;
-import com.ploton.api.repository.InvestimentoRepository;
-import com.ploton.api.repository.MetaRepository;
-import com.ploton.api.repository.TransacaoRepository;
-import com.ploton.api.repository.UsuarioRepository;
+import com.ploton.api.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -35,22 +31,21 @@ public class DashboardService {
 
     public DashboardResponseDTO buscarResumo(Long usuarioId) {
         LocalDate hoje = LocalDate.now();
-        int mesAtual = hoje.getMonthValue();
-        int anoAtual = hoje.getYear();
+        LocalDate inicioMes = hoje.withDayOfMonth(1);
+        LocalDate fimMes = hoje.withDayOfMonth(hoje.lengthOfMonth());
 
-        BigDecimal totalReceitas = transacaoRepository.calcularTotalReceitas(usuarioId);
-        BigDecimal totalDespesas = transacaoRepository.calcularTotalDespesas(usuarioId);
+        BigDecimal totalReceitas = transacaoRepository.calcularReceitasNoPeriodo(usuarioId, inicioMes, fimMes);
+        BigDecimal totalDespesas = transacaoRepository.calcularDespesasNoPeriodo(usuarioId, inicioMes, fimMes);
+
         BigDecimal totalInvestido = investimentoRepository.calcularTotalAplicado(usuarioId);
         BigDecimal totalGuardado = metaRepository.calcularTotalGuardado(usuarioId);
-        BigDecimal faturaAtual = faturaRepository.calcularTotalFaturasDoMes(usuarioId, mesAtual, anoAtual);
+        BigDecimal faturaAtual = faturaRepository.calcularTotalFaturasDoMes(usuarioId, hoje.getMonthValue(), hoje.getYear());
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        BigDecimal saldoReal = usuario.getSaldoManual();
-
         return new DashboardResponseDTO(
-                saldoReal,
+                usuario.getSaldoManual(),
                 totalReceitas,
                 totalDespesas,
                 faturaAtual,

@@ -3,6 +3,7 @@ package com.ploton.api.controller;
 import com.ploton.api.dto.TransacaoRequestDTO;
 import com.ploton.api.model.Transacao;
 import com.ploton.api.service.TransacaoService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +22,10 @@ public class TransacaoController {
     }
 
     @PostMapping
-    public ResponseEntity<Transacao> registrar(@RequestBody TransacaoRequestDTO dto) {
-        Transacao novaTransacao = service.registrar(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novaTransacao);
+    public ResponseEntity<Void> criar(@RequestBody @Valid TransacaoRequestDTO dto) {
+        // RESOLVE O ERRO: Alinhado com o nome definido no TransacaoService
+        service.salvarTransacao(dto);
+        return ResponseEntity.ok().build();
     }
 
     // Endpoint para listar transações de um usuário específico

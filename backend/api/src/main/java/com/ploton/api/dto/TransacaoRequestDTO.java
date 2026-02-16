@@ -1,14 +1,15 @@
 package com.ploton.api.dto;
 
-import com.ploton.api.model.TipoTransacao;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record TransacaoRequestDTO(
-        String descricao,
+        Long usuarioId,
+        String nome,
         BigDecimal valor,
-        LocalDate data,
+        String tipo, // "RECEITA" ou "DESPESA"
         String categoria,
-        TipoTransacao tipo,
-        Long usuarioId
+        String metodoPagamento,
+        LocalDate data,
+        Integer totalParcelas
 ) {}

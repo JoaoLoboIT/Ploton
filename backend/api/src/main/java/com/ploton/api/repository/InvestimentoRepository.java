@@ -11,6 +11,7 @@ import java.util.List;
 
 @Repository
 public interface InvestimentoRepository extends JpaRepository<Investimento, Long> {
+    List<Investimento> findByUsuarioId(Long usuarioId);
 
     // Metodo usado pelo seu InvestimentoService (Listar por nome)
     List<Investimento> findByUsuarioIdOrderByNomeAsc(Long usuarioId);

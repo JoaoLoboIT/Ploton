@@ -1,43 +1,77 @@
 package com.ploton.api.service;
 
 import com.ploton.api.dto.TransacaoRequestDTO;
+import com.ploton.api.model.TipoTransacao;
 import com.ploton.api.model.Transacao;
 import com.ploton.api.model.Usuario;
 import com.ploton.api.repository.TransacaoRepository;
+import com.ploton.api.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class TransacaoService {
 
+    // Nomes de variáveis padronizados conforme seus campos existentes
     private final TransacaoRepository repository;
+    private final UsuarioRepository usuarioRepository;
     private final UsuarioService usuarioService;
 
-    // Injeção de dependência de ambos os componentes necessários
-    public TransacaoService(TransacaoRepository repository, UsuarioService usuarioService) {
+    public TransacaoService(TransacaoRepository repository,
+                            UsuarioRepository usuarioRepository,
+                            UsuarioService usuarioService) {
         this.repository = repository;
+        this.usuarioRepository = usuarioRepository;
         this.usuarioService = usuarioService;
     }
 
     @Transactional
-    public Transacao registrar(TransacaoRequestDTO dados) {
-        // Valida se o usuário existe antes de prosseguir
-        Usuario usuario = usuarioService.buscarPorId(dados.usuarioId());
+    public void salvarTransacao(TransacaoRequestDTO dto) {
+        Usuario usuario = usuarioService.buscarPorId(dto.usuarioId());
+        int parcelas = (dto.totalParcelas() != null && dto.totalParcelas() > 0) ? dto.totalParcelas() : 1;
+        BigDecimal valorParcela = dto.valor().divide(BigDecimal.valueOf(parcelas), 2, RoundingMode.HALF_UP);
+        String grupoId = UUID.randomUUID().toString();
 
-        Transacao novaTransacao = new Transacao();
-        novaTransacao.setDescricao(dados.descricao());
-        novaTransacao.setValor(dados.valor());
-        novaTransacao.setData(dados.data());
-        novaTransacao.setCategoria(dados.categoria());
-        novaTransacao.setTipo(dados.tipo()); // Enum é atribuído diretamente
-        novaTransacao.setUsuario(usuario);   // Vincula a FK (Foreign Key)
+        for (int i = 0; i < parcelas; i++) {
+            Transacao t = new Transacao();
+            t.setUsuario(usuario);
+            t.setNome(dto.nome());
+            t.setValor(valorParcela);
+            t.setTipo(TipoTransacao.valueOf(dto.tipo().toUpperCase()));
+            t.setCategoria(dto.categoria());
+            t.setMetodoPagamento(dto.metodoPagamento());
 
-        return repository.save(novaTransacao);
+            // Incrementa um mês para cada parcela subsequente
+            t.setData(dto.data().plusMonths(i));
+
+            t.setParcelaAtual(i + 1);
+            t.setTotalParcelas(parcelas);
+            t.setInstalamentoId(grupoId);
+
+            this.repository.save(t);
+        }
     }
 
     public List<Transacao> listarPorUsuario(Long usuarioId) {
         return repository.findByUsuarioId(usuarioId);
+    }
+
+    @Transactional
+    public void excluirTransacao(Long id, boolean excluirTudo) {
+        Transacao t = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Transação não encontrada"));
+
+        if (excluirTudo && t.getInstalamentoId() != null) {
+            // Remove o grupo inteiro de parcelas
+            repository.deleteByInstalamentoId(t.getInstalamentoId());
+        } else {
+            // Remove apenas a parcela selecionada
+            repository.delete(t);
+        }
     }
 }

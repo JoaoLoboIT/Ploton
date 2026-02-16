@@ -66,7 +66,7 @@ public class InvestimentoService {
     }
     @Transactional
     public Investimento fazerAporte(Long id, BigDecimal valorAporte) {
-
+        // Mude 'repository' para 'investimentoRepository' (ou o nome que você usou no topo da classe)
         Investimento inv = investimentoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Investimento não encontrado"));
 
@@ -74,7 +74,6 @@ public class InvestimentoService {
             inv.setValorInvestido(BigDecimal.ZERO);
         }
 
-        // Aporte soma no dinheiro tirado do bolso e no saldo total
         inv.setValorInvestido(inv.getValorInvestido().add(valorAporte));
         inv.setSaldo(inv.getSaldo().add(valorAporte));
 

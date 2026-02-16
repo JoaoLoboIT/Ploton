@@ -10,6 +10,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Table(name = "transacoes")
 @Data
 public class Transacao {
+    @Column(name = "name")
+    private String nome;
+
+    @Column(name = "instalamento_id")
+    private String instalamentoId;
+
+    @Column(name = "parcela_atual")
+    private Integer parcelaAtual = 1;
+
+    @Column(name = "total_parcelas")
+    private Integer totalParcelas = 1;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,6 +41,9 @@ public class Transacao {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TipoTransacao tipo;
+
+    @Column(name = "metodo_pagamento")
+    private String metodoPagamento;
 
     // Define relacionamento e chave estrangeira (FK)
     @ManyToOne(fetch = FetchType.LAZY)
