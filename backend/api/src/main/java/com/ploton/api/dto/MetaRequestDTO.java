@@ -25,14 +25,5 @@ public record MetaRequestDTO(
 
         @NotNull(message = "A data limite é obrigatória")
         @Future(message = "A data limite deve ser no futuro")
-        LocalDate dataLimite,
-
-        // NOVOS CAMPOS PARA A VERSÃO 2.0
-        @NotNull(message = "A prioridade é obrigatória")
-        Prioridade prioridade,
-
-        @NotBlank(message = "O tipo de período é obrigatório")
-        String tipoPeriodo, // "SEMANAL", "MENSAL" ou "ANUAL"
-
-        boolean ehWishlist
+        LocalDate dataLimite
 ) {}

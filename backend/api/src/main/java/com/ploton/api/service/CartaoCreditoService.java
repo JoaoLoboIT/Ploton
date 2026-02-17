@@ -44,4 +44,10 @@ public class CartaoCreditoService {
         return repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cartão não encontrado"));
     }
+
+    @Transactional
+    public void deletar(Long id) {
+        CartaoCredito cartao = buscarPorId(id);
+        repository.delete(cartao);
+    }
 }

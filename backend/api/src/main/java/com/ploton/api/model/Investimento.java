@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "investimentos")
@@ -35,6 +37,12 @@ public class Investimento {
     @JsonIgnore
     private Usuario usuario;
 
+    // AQUI ESTÁ A MÁGICA DA CASCATA 🪄
+    // orphanRemoval = true garante que se o investimento for apagado, o histórico vai junto.
+    @OneToMany(mappedBy = "investimento", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // Evita loop infinito na hora de mandar o JSON pro React
+    private List<MovimentacaoInvestimento> movimentacoes = new ArrayList<>();
+
     public Investimento() {}
 
     // Getters e Setters
@@ -50,7 +58,6 @@ public class Investimento {
     public BigDecimal getSaldo() { return saldo; }
     public void setSaldo(BigDecimal saldo) { this.saldo = saldo; }
 
-    // Novos Getters e Setters para o Valor Investido!
     public BigDecimal getValorInvestido() { return valorInvestido; }
     public void setValorInvestido(BigDecimal valorInvestido) { this.valorInvestido = valorInvestido; }
 
@@ -59,4 +66,8 @@ public class Investimento {
 
     public Usuario getUsuario() { return usuario; }
     public void setUsuario(Usuario usuario) { this.usuario = usuario; }
+
+    // Getters e Setters da lista de movimentações
+    public List<MovimentacaoInvestimento> getMovimentacoes() { return movimentacoes; }
+    public void setMovimentacoes(List<MovimentacaoInvestimento> movimentacoes) { this.movimentacoes = movimentacoes; }
 }

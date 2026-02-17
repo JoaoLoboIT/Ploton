@@ -42,7 +42,7 @@ public class MetaController {
     @PatchMapping("/{id}/saldo")
     public ResponseEntity<Meta> atualizarSaldo(
             @PathVariable Long id,
-            @RequestBody @Valid MetaOperacaoDTO dto) {
+            @RequestBody @Valid MetaOperacaoDTO dto) {  
 
         Meta metaAtualizada = metaService.atualizarSaldo(id, dto.valor(), dto.tipo());
         return ResponseEntity.ok(metaAtualizada);

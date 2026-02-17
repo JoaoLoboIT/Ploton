@@ -31,4 +31,10 @@ public class CartaoCreditoController {
         List<CartaoCredito> cartoes = service.listarPorUsuario(usuarioId);
         return ResponseEntity.ok(cartoes);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+        service.deletar(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -100,4 +100,13 @@ public class InvestimentoService {
             investimento.setSaldo(investimento.getSaldo().add(valor));
         }
     }
+
+    @Transactional
+    public void deletar(Long id) {
+        // Verifica se o investimento existe antes de tentar apagar
+        Investimento inv = investimentoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Investimento não encontrado"));
+
+        investimentoRepository.delete(inv);
+    }
 }

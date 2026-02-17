@@ -102,12 +102,6 @@ public class MetaService {
         meta.setValorAlvo(dto.valorAlvo());
         meta.setValorAtual(dto.valorAtual() != null ? dto.valorAtual() : BigDecimal.ZERO);
         meta.setDataLimite(dto.dataLimite());
-
-        // Novos campos mapeados
-        meta.setPrioridade(dto.prioridade());
-        meta.setTipoPeriodo(dto.tipoPeriodo());
-        meta.setEhWishlist(dto.ehWishlist());
-
         meta.setUsuario(usuario);
 
         return metaRepository.save(meta);

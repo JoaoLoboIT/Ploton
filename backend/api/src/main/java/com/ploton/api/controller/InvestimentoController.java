@@ -57,4 +57,10 @@ public class InvestimentoController {
             @RequestBody com.ploton.api.dto.OperacaoInvestimentoDTO dto) {
         return ResponseEntity.ok(service.atualizarValorMercado(id, dto.valor()));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+        service.deletar(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -35,16 +35,6 @@ public class Meta {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "prioridade") // Removido o nullable = false
-    private Prioridade prioridade = Prioridade.MEDIO; // Valor padrão para registros novos e antigos
-
-    @Column(name = "tipo_periodo") // Removido o nullable = false
-    private String tipoPeriodo = "MENSAL"; // Valor padrão
-
-    @Column(name = "eh_wishlist") // Removido o nullable = false
-    private boolean ehWishlist = false;
-
     // Lógica de negócio: Calcula a porcentagem de conclusão baseada no valor atual vs alvo
     public BigDecimal getPorcentagemConcluida() {
         if (valorAlvo == null || valorAlvo.compareTo(BigDecimal.ZERO) == 0) {

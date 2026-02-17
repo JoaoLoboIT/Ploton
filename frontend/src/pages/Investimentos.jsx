@@ -10,11 +10,10 @@ function Investimentos() {
 
     const [novoAtivo, setNovoAtivo] = useState({ nome: '', tipo: 'RENDA_FIXA' });
     
-    // O NOVO ESTADO DA CENTRAL DE OPERAÇÕES
     const [operacao, setOperacao] = useState({ 
         investimentoId: '', 
-        tipoOperacao: 'APORTE', // Pode ser 'APORTE' ou 'RENDIMENTO'
-        valor: '' 
+        tipoOperacao: 'APORTE', 
+        valor: '' // Agora guarda a string da máscara (ex: "1.000,00")
     });
 
     const buscarInvestimentos = () => {
@@ -36,7 +35,29 @@ function Investimentos() {
     const lidarComMudancaAtivo = (e) => setNovoAtivo({ ...novoAtivo, [e.target.name]: e.target.value });
     const lidarComMudancaOperacao = (e) => setOperacao({ ...operacao, [e.target.name]: e.target.value });
 
-    // 1. CRIAR NOVO ATIVO
+    // --- NOVA FUNÇÃO: MÁSCARA DE MOEDA ---
+    const lidarComMascaraValorOperacao = (e) => {
+        let valor = e.target.value;
+        valor = valor.replace(/\D/g, ""); // Remove não numéricos
+        
+        if (valor === "") {
+            setOperacao({ ...operacao, valor: "" });
+            return;
+        }
+
+        valor = (Number(valor) / 100).toFixed(2);
+        valor = valor.replace(".", ",");
+        valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+        
+        setOperacao({ ...operacao, valor: valor });
+    };
+
+    // --- NOVA FUNÇÃO: TRADUTOR PARA O BACKEND ---
+    const parseParaNumero = (strMoeda) => {
+        if (!strMoeda) return 0;
+        return parseFloat(String(strMoeda).replace(/\./g, "").replace(",", "."));
+    };
+
     const submeterAtivo = (e) => {
         e.preventDefault();
         api.post('/investimentos', { ...novoAtivo, usuarioId: usuarioLogado.id })
@@ -48,15 +69,15 @@ function Investimentos() {
             .catch(() => alert("Erro ao criar o investimento."));
     };
 
-    // 2. A MÁGICA DA NOVA ARQUITETURA: APORTE VS RENDIMENTO
     const submeterOperacao = (e) => {
         e.preventDefault();
         
-        const valorNumerico = parseFloat(operacao.valor);
+        // Uso do tradutor numérico antes de enviar
+        const valorNumerico = parseParaNumero(operacao.valor);
         const id = operacao.investimentoId;
 
         if (!id || isNaN(valorNumerico) || valorNumerico <= 0) {
-            alert("Preencha os dados corretamente.");
+            alert("Preencha os dados corretamente com um valor válido.");
             return;
         }
 
@@ -64,14 +85,28 @@ function Investimentos() {
             ? `/investimentos/${id}/aporte` 
             : `/investimentos/${id}/rendimento`;
 
-        // Mandamos o nosso OperacaoInvestimentoDTO para o Java!
         api.patch(endpoint, { valor: valorNumerico })
             .then(() => {
                 alert(operacao.tipoOperacao === 'APORTE' ? "Aporte realizado com sucesso!" : "Rendimento atualizado!");
                 setOperacao({ investimentoId: '', tipoOperacao: 'APORTE', valor: '' });
-                buscarInvestimentos(); // Atualiza a tabela na hora
+                buscarInvestimentos(); 
             })
             .catch(() => alert("Erro ao registrar a operação."));
+    };
+
+    // --- NOVA FUNÇÃO: DELETAR ATIVO ---
+    const deletarAtivo = (id) => {
+        if (window.confirm("Tem certeza que deseja apagar este ativo da sua carteira? Esta ação não pode ser desfeita.")) {
+            api.delete(`/investimentos/${id}`)
+                .then(() => {
+                    alert("Ativo removido com sucesso.");
+                    buscarInvestimentos(); // Recarrega a tabela
+                })
+                .catch((error) => {
+                    console.error("Erro ao deletar:", error);
+                    alert("Erro ao remover o ativo.");
+                });
+        }
     };
 
     const formatarDinheiro = (valor) => {
@@ -114,7 +149,7 @@ function Investimentos() {
                 </form>
             </div>
 
-            {/* TABELA DE ATIVOS: AGORA COM LUCRO/PREJUÍZO */}
+            {/* TABELA DE ATIVOS */}
             <div className="bg-gray-900 rounded-2xl border border-gray-800 shadow-xl mb-8 overflow-hidden">
                 <div className="p-6 border-b border-gray-800 bg-gray-800/30">
                     <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -129,11 +164,13 @@ function Investimentos() {
                                 <th className="p-4 border-b border-gray-700">Valor Investido</th>
                                 <th className="p-4 border-b border-gray-700">Saldo Atual (Mercado)</th>
                                 <th className="p-4 border-b border-gray-700 text-right">Rentabilidade</th>
+                                {/* NOVA COLUNA DE AÇÕES */}
+                                <th className="p-4 border-b border-gray-700 text-center w-16">Ações</th> 
                             </tr>
                         </thead>
                         <tbody className="text-gray-300">
                             {investimentos.length === 0 ? (
-                                <tr><td colSpan="4" className="p-6 text-center text-gray-500 italic">Nenhum investimento cadastrado.</td></tr>
+                                <tr><td colSpan="5" className="p-6 text-center text-gray-500 italic">Nenhum investimento cadastrado.</td></tr>
                             ) : (
                                 investimentos.map((inv) => {
                                     const investido = inv.valorInvestido || 0;
@@ -145,7 +182,7 @@ function Investimentos() {
                                     const corLucro = isPositivo ? 'text-emerald-400' : 'text-red-400';
 
                                     return (
-                                        <tr key={inv.id} className="hover:bg-gray-800/40 transition-colors">
+                                        <tr key={inv.id} className="hover:bg-gray-800/40 transition-colors group">
                                             <td className="p-4 border-b border-gray-800">
                                                 <p className="font-medium text-white">{inv.nome}</p>
                                                 <span className="text-[10px] text-purple-400 uppercase tracking-widest">{inv.tipo}</span>
@@ -159,6 +196,16 @@ function Investimentos() {
                                             <td className={`p-4 border-b border-gray-800 text-right font-bold font-tech ${corLucro}`}>
                                                 <p>{isPositivo ? '+' : ''}{formatarDinheiro(lucroReais)}</p>
                                                 <p className="text-xs opacity-80">{isPositivo ? '+' : ''}{lucroPercentual.toFixed(2)}%</p>
+                                            </td>
+                                            {/* BOTAO DE DELETAR COM FEEDBACK VISUAL */}
+                                            <td className="p-4 border-b border-gray-800 text-center">
+                                                <button 
+                                                    onClick={() => deletarAtivo(inv.id)}
+                                                    className="text-gray-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                                    title="Apagar Ativo"
+                                                >
+                                                    🗑️
+                                                </button>
                                             </td>
                                         </tr>
                                     );
@@ -180,7 +227,6 @@ function Investimentos() {
 
                 <form onSubmit={submeterOperacao} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end relative z-10">
                     
-                    {/* SELETOR DE OPERAÇÃO: APORTE OU RENDIMENTO */}
                     <div className="lg:col-span-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700 flex gap-4">
                         <label className="flex items-center gap-2 text-white cursor-pointer">
                             <input type="radio" name="tipoOperacao" value="APORTE" checked={operacao.tipoOperacao === 'APORTE'} onChange={lidarComMudancaOperacao} className="accent-blue-500 w-5 h-5" />
@@ -204,12 +250,21 @@ function Investimentos() {
                         </select>
                     </div>
                     
-                    <div className="lg:col-span-2">
+                    {/* CAMPO DE VALOR COM MÁSCARA ATIVADA */}
+                    <div className="lg:col-span-2 relative">
                         <label className={labelStyle}>
                             {operacao.tipoOperacao === 'APORTE' ? 'Valor do Aporte (R$)' : 'Novo Valor de Mercado (R$)'}
                         </label>
-                        <input type="number" step="0.01" name="valor" value={operacao.valor} onChange={lidarComMudancaOperacao} required className={inputStyle} 
-                               placeholder={operacao.tipoOperacao === 'APORTE' ? "Ex: 500.00" : "Ex: 1100.00"} />
+                        <span className="absolute left-4 top-[42px] text-gray-500 text-sm font-bold">R$</span>
+                        <input 
+                            type="text" // Alterado de number para text
+                            name="valor" 
+                            value={operacao.valor} 
+                            onChange={lidarComMascaraValorOperacao} 
+                            required 
+                            className={`${inputStyle} pl-10`} // Espaço extra para o "R$"
+                            placeholder="0,00" 
+                        />
                     </div>
 
                     <button type="submit" className={`lg:col-span-4 h-[50px] text-white font-bold rounded-lg px-6 active:scale-95 transition-all flex justify-center items-center gap-2 shadow-lg ${operacao.tipoOperacao === 'APORTE' ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/20' : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/20'}`}>
