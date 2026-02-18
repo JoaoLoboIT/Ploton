@@ -13,7 +13,6 @@ public class Orcamento {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // A categoria deve ser uma String igual à usada nas Transações (ex: "Alimentação")
     @Column(nullable = false)
     private String categoria;
 

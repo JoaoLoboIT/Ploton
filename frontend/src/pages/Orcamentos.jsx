@@ -1,4 +1,3 @@
-// src/pages/Orcamentos.jsx
 import { useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../contexts/AuthContext';
@@ -51,7 +50,6 @@ function Orcamentos() {
         <div className="animate-fadeIn">
             <h1 className="text-3xl font-bold mb-8 font-tech text-white">Planejamento de Gastos</h1>
 
-            {/* FORMULÁRIO DE CRIAÇÃO */}
             <div className="bg-gray-900 p-6 rounded-2xl border border-gray-800 mb-10 shadow-xl">
                 <h2 className="text-sm font-tech text-gray-400 uppercase tracking-widest mb-6">Definir Novo Limite</h2>
                 <form onSubmit={salvarOrcamento} className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
@@ -81,7 +79,6 @@ function Orcamentos() {
                 </form>
             </div>
 
-            {/* LISTAGEM COM BARRAS DE PROGRESSO */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {orcamentos.map(o => (
                     <div key={o.id} className="bg-gray-900 p-6 rounded-2xl border border-gray-800 relative overflow-hidden group">
@@ -95,7 +92,6 @@ function Orcamentos() {
                             </span>
                         </div>
 
-                        {/* BARRA DE PROGRESSO DINÂMICA */}
                         <div className="w-full bg-gray-800 h-3 rounded-full overflow-hidden mb-2">
                             <div 
                                 className={`h-full transition-all duration-1000 ease-out ${getCorBarra(o.porcentagemConsumida)}`}

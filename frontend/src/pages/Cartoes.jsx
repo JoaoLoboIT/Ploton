@@ -1,4 +1,3 @@
-// src/pages/Cartoes.jsx
 import { useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../contexts/AuthContext';

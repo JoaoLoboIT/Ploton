@@ -17,7 +17,6 @@ import java.util.UUID;
 @Service
 public class TransacaoService {
 
-    // Nomes de variáveis padronizados conforme seus campos existentes
     private final TransacaoRepository repository;
     private final UsuarioRepository usuarioRepository;
     private final UsuarioService usuarioService;
@@ -41,14 +40,12 @@ public class TransacaoService {
             Transacao t = new Transacao();
             t.setUsuario(usuario);
             t.setNome(dto.nome());
+            t.setDescricao(dto.nome());
             t.setValor(valorParcela);
             t.setTipo(TipoTransacao.valueOf(dto.tipo().toUpperCase()));
             t.setCategoria(dto.categoria());
             t.setMetodoPagamento(dto.metodoPagamento());
-
-            // Incrementa um mês para cada parcela subsequente
             t.setData(dto.data().plusMonths(i));
-
             t.setParcelaAtual(i + 1);
             t.setTotalParcelas(parcelas);
             t.setInstalamentoId(grupoId);
@@ -67,10 +64,8 @@ public class TransacaoService {
                 .orElseThrow(() -> new RuntimeException("Transação não encontrada"));
 
         if (excluirTudo && t.getInstalamentoId() != null) {
-            // Remove o grupo inteiro de parcelas
             repository.deleteByInstalamentoId(t.getInstalamentoId());
         } else {
-            // Remove apenas a parcela selecionada
             repository.delete(t);
         }
     }

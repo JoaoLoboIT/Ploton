@@ -32,7 +32,6 @@ public class Fatura {
 
     public Fatura() {}
 
-    // Getters e Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

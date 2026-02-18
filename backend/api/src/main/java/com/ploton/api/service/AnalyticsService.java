@@ -22,7 +22,6 @@ public class AnalyticsService {
     }
 
     public List<HistoricoMensalDTO> getHistoricoGastos(Long usuarioId) {
-        // Agora usa a query de projeção futura
         List<Object[]> resultados = transacaoRepository.buscarResumoHibrido(usuarioId);
 
         return resultados.stream().map(row -> {

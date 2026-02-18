@@ -8,8 +8,5 @@ import java.util.List;
 
 @Repository
 public interface CartaoCreditoRepository extends JpaRepository<CartaoCredito, Long> {
-
-    // Busca apenas os cartões pertencentes a um usuário específico
     List<CartaoCredito> findByUsuarioId(Long usuarioId);
-
 }

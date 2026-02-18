@@ -14,16 +14,16 @@ public class CompraCartao {
     private Long id;
 
     @Column(nullable = false)
-    private String descricao; // Ex: "iPhone 15", "Uber"
+    private String descricao;
 
     @Column(nullable = false)
-    private String categoria; // Ex: "Eletrônicos", "Transporte"
+    private String categoria;
 
     @Column(name = "valor_total", nullable = false)
     private BigDecimal valorTotal;
 
     @Column(name = "quantidade_parcelas", nullable = false)
-    private Integer quantidadeParcelas; // 1 = à vista
+    private Integer quantidadeParcelas;
 
     @Column(name = "data_compra", nullable = false)
     private LocalDate dataCompra;

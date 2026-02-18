@@ -10,7 +10,6 @@ import java.util.List;
 
 @Repository
 public interface ParcelaRepository extends JpaRepository<Parcela, Long> {
-
     List<Parcela> findByFaturaId(Long faturaId);
 
     @Query("SELECT p FROM Parcela p JOIN p.fatura f JOIN f.cartao c WHERE c.usuario.id = :usuarioId AND f.mes = :mes AND f.ano = :ano")

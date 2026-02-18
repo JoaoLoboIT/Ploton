@@ -21,11 +21,9 @@ public class Investimento {
     @Column(nullable = false)
     private String tipo;
 
-    // Valor de mercado atual (quanto o banco diz que você tem)
     @Column(nullable = false)
     private BigDecimal saldo = BigDecimal.ZERO;
 
-    // NOVO CAMPO: Quanto dinheiro efetivamente saiu do seu bolso
     @Column(name = "valor_investido")
     private BigDecimal valorInvestido = BigDecimal.ZERO;
 
@@ -37,15 +35,12 @@ public class Investimento {
     @JsonIgnore
     private Usuario usuario;
 
-    // AQUI ESTÁ A MÁGICA DA CASCATA 🪄
-    // orphanRemoval = true garante que se o investimento for apagado, o histórico vai junto.
     @OneToMany(mappedBy = "investimento", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore // Evita loop infinito na hora de mandar o JSON pro React
+    @JsonIgnore
     private List<MovimentacaoInvestimento> movimentacoes = new ArrayList<>();
 
     public Investimento() {}
 
-    // Getters e Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -67,7 +62,6 @@ public class Investimento {
     public Usuario getUsuario() { return usuario; }
     public void setUsuario(Usuario usuario) { this.usuario = usuario; }
 
-    // Getters e Setters da lista de movimentações
     public List<MovimentacaoInvestimento> getMovimentacoes() { return movimentacoes; }
     public void setMovimentacoes(List<MovimentacaoInvestimento> movimentacoes) { this.movimentacoes = movimentacoes; }
 }

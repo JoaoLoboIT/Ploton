@@ -1,4 +1,3 @@
-// src/pages/Investimentos.jsx
 import { useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../contexts/AuthContext';
@@ -13,7 +12,7 @@ function Investimentos() {
     const [operacao, setOperacao] = useState({ 
         investimentoId: '', 
         tipoOperacao: 'APORTE', 
-        valor: '' // Agora guarda a string da máscara (ex: "1.000,00")
+        valor: '' 
     });
 
     const buscarInvestimentos = () => {
@@ -35,10 +34,9 @@ function Investimentos() {
     const lidarComMudancaAtivo = (e) => setNovoAtivo({ ...novoAtivo, [e.target.name]: e.target.value });
     const lidarComMudancaOperacao = (e) => setOperacao({ ...operacao, [e.target.name]: e.target.value });
 
-    // --- NOVA FUNÇÃO: MÁSCARA DE MOEDA ---
     const lidarComMascaraValorOperacao = (e) => {
         let valor = e.target.value;
-        valor = valor.replace(/\D/g, ""); // Remove não numéricos
+        valor = valor.replace(/\D/g, ""); 
         
         if (valor === "") {
             setOperacao({ ...operacao, valor: "" });
@@ -52,7 +50,6 @@ function Investimentos() {
         setOperacao({ ...operacao, valor: valor });
     };
 
-    // --- NOVA FUNÇÃO: TRADUTOR PARA O BACKEND ---
     const parseParaNumero = (strMoeda) => {
         if (!strMoeda) return 0;
         return parseFloat(String(strMoeda).replace(/\./g, "").replace(",", "."));
@@ -72,7 +69,6 @@ function Investimentos() {
     const submeterOperacao = (e) => {
         e.preventDefault();
         
-        // Uso do tradutor numérico antes de enviar
         const valorNumerico = parseParaNumero(operacao.valor);
         const id = operacao.investimentoId;
 
@@ -94,13 +90,12 @@ function Investimentos() {
             .catch(() => alert("Erro ao registrar a operação."));
     };
 
-    // --- NOVA FUNÇÃO: DELETAR ATIVO ---
     const deletarAtivo = (id) => {
         if (window.confirm("Tem certeza que deseja apagar este ativo da sua carteira? Esta ação não pode ser desfeita.")) {
             api.delete(`/investimentos/${id}`)
                 .then(() => {
                     alert("Ativo removido com sucesso.");
-                    buscarInvestimentos(); // Recarrega a tabela
+                    buscarInvestimentos(); 
                 })
                 .catch((error) => {
                     console.error("Erro ao deletar:", error);
@@ -123,7 +118,6 @@ function Investimentos() {
         <div>
             <h1 className="text-3xl font-bold mb-8 font-tech text-white">Meus Investimentos</h1>
 
-            {/* FORMULÁRIO 1: CRIAR ATIVO */}
             <div className={cardStyle}>
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl"></div>
                 <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2 relative z-10">
@@ -149,7 +143,6 @@ function Investimentos() {
                 </form>
             </div>
 
-            {/* TABELA DE ATIVOS */}
             <div className="bg-gray-900 rounded-2xl border border-gray-800 shadow-xl mb-8 overflow-hidden">
                 <div className="p-6 border-b border-gray-800 bg-gray-800/30">
                     <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -164,7 +157,6 @@ function Investimentos() {
                                 <th className="p-4 border-b border-gray-700">Valor Investido</th>
                                 <th className="p-4 border-b border-gray-700">Saldo Atual (Mercado)</th>
                                 <th className="p-4 border-b border-gray-700 text-right">Rentabilidade</th>
-                                {/* NOVA COLUNA DE AÇÕES */}
                                 <th className="p-4 border-b border-gray-700 text-center w-16">Ações</th> 
                             </tr>
                         </thead>
@@ -197,7 +189,6 @@ function Investimentos() {
                                                 <p>{isPositivo ? '+' : ''}{formatarDinheiro(lucroReais)}</p>
                                                 <p className="text-xs opacity-80">{isPositivo ? '+' : ''}{lucroPercentual.toFixed(2)}%</p>
                                             </td>
-                                            {/* BOTAO DE DELETAR COM FEEDBACK VISUAL */}
                                             <td className="p-4 border-b border-gray-800 text-center">
                                                 <button 
                                                     onClick={() => deletarAtivo(inv.id)}
@@ -216,7 +207,6 @@ function Investimentos() {
                 </div>
             </div>
 
-            {/* FORMULÁRIO 2: CENTRAL DE OPERAÇÕES */}
             <div className={cardStyle}>
                 <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl transition-colors duration-500 ${operacao.tipoOperacao === 'APORTE' ? 'bg-blue-500/10' : 'bg-emerald-500/10'}`}></div>
                 
@@ -250,19 +240,18 @@ function Investimentos() {
                         </select>
                     </div>
                     
-                    {/* CAMPO DE VALOR COM MÁSCARA ATIVADA */}
                     <div className="lg:col-span-2 relative">
                         <label className={labelStyle}>
                             {operacao.tipoOperacao === 'APORTE' ? 'Valor do Aporte (R$)' : 'Novo Valor de Mercado (R$)'}
                         </label>
                         <span className="absolute left-4 top-[42px] text-gray-500 text-sm font-bold">R$</span>
                         <input 
-                            type="text" // Alterado de number para text
+                            type="text" 
                             name="valor" 
                             value={operacao.valor} 
                             onChange={lidarComMascaraValorOperacao} 
                             required 
-                            className={`${inputStyle} pl-10`} // Espaço extra para o "R$"
+                            className={`${inputStyle} pl-10`} 
                             placeholder="0,00" 
                         />
                     </div>

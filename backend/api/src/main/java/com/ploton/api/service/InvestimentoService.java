@@ -35,7 +35,6 @@ public class InvestimentoService {
         novoInvestimento.setNome(dto.nome());
         novoInvestimento.setTipo(dto.tipo());
         novoInvestimento.setUsuario(dono);
-        // Saldo já nasce zero pela definição na classe Modelo
 
         return investimentoRepository.save(novoInvestimento);
     }
@@ -66,7 +65,6 @@ public class InvestimentoService {
     }
     @Transactional
     public Investimento fazerAporte(Long id, BigDecimal valorAporte) {
-        // Mude 'repository' para 'investimentoRepository' (ou o nome que você usou no topo da classe)
         Investimento inv = investimentoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Investimento não encontrado"));
 
@@ -85,7 +83,6 @@ public class InvestimentoService {
         Investimento inv = investimentoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Investimento não encontrado"));
 
-        // Atualizar mercado muda APENAS o saldo atual, não mexe no valor aportado
         inv.setSaldo(novoSaldo);
 
         return investimentoRepository.save(inv);
@@ -93,17 +90,14 @@ public class InvestimentoService {
 
     private void atualizarSaldo(Investimento investimento, BigDecimal valor, TipoMovimentacao tipo) {
         if (tipo == TipoMovimentacao.RESGATE) {
-            // Se for saque, subtrai
             investimento.setSaldo(investimento.getSaldo().subtract(valor));
         } else {
-            // Se for Aporte ou Rendimento, soma
             investimento.setSaldo(investimento.getSaldo().add(valor));
         }
     }
 
     @Transactional
     public void deletar(Long id) {
-        // Verifica se o investimento existe antes de tentar apagar
         Investimento inv = investimentoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Investimento não encontrado"));
 

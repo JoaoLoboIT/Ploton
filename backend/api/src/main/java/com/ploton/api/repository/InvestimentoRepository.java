@@ -12,11 +12,8 @@ import java.util.List;
 @Repository
 public interface InvestimentoRepository extends JpaRepository<Investimento, Long> {
     List<Investimento> findByUsuarioId(Long usuarioId);
-
-    // Metodo usado pelo seu InvestimentoService (Listar por nome)
     List<Investimento> findByUsuarioIdOrderByNomeAsc(Long usuarioId);
 
-    // Metodo usado pelo DashboardService (Somar saldo total)
     @Query("SELECT COALESCE(SUM(i.saldo), 0) FROM Investimento i WHERE i.usuario.id = :usuarioId")
     BigDecimal calcularTotalAplicado(@Param("usuarioId") Long usuarioId);
 }

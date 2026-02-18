@@ -7,7 +7,7 @@ public record TransacaoRequestDTO(
         Long usuarioId,
         String nome,
         BigDecimal valor,
-        String tipo, // "RECEITA" ou "DESPESA"
+        String tipo,
         String categoria,
         String metodoPagamento,
         LocalDate data,

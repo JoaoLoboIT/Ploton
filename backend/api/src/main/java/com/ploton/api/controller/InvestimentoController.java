@@ -22,21 +22,18 @@ public class InvestimentoController {
         this.service = service;
     }
 
-    // 1. Cria um novo ativo na carteira
     @PostMapping
     public ResponseEntity<Investimento> criar(@RequestBody InvestimentoRequestDTO dto) {
         Investimento novo = service.criar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(novo);
     }
 
-    // 2. Lista todos os investimentos do usuário
     @GetMapping("/usuario/{usuarioId}")
     public ResponseEntity<List<Investimento>> listar(@PathVariable Long usuarioId) {
         List<Investimento> lista = service.listarPorUsuario(usuarioId);
         return ResponseEntity.ok(lista);
     }
 
-    // 3. A "Torneira": Realiza Aporte, Resgate ou Rendimento
     @PostMapping("/movimentacao")
     public ResponseEntity<MovimentacaoInvestimento> movimentar(@RequestBody MovimentacaoRequestDTO dto) {
         MovimentacaoInvestimento mov = service.registrarMovimentacao(dto);

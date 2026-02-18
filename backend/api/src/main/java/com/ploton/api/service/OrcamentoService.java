@@ -21,7 +21,7 @@ public class OrcamentoService {
 
     private final OrcamentoRepository orcamentoRepository;
     private final TransacaoRepository transacaoRepository;
-    private final UsuarioService usuarioService; // Essencial para resolver o símbolo!
+    private final UsuarioService usuarioService;
 
     public OrcamentoService(OrcamentoRepository orcamentoRepository,
                             TransacaoRepository transacaoRepository,
@@ -32,17 +32,13 @@ public class OrcamentoService {
     }
 
     public List<OrcamentoResponseDTO> listarProgressoMensal(Long usuarioId, Integer mes, Integer ano) {
-        // 1. Busca todos os orçamentos definidos para o mês
         List<Orcamento> orcamentos = orcamentoRepository.findByUsuarioIdAndMesAndAno(usuarioId, mes, ano);
 
         return orcamentos.stream().map(orcamento -> {
-            // 2. Calcula o total gasto naquela categoria específica
             BigDecimal gastoNaCategoria = calcularGastoCategoria(usuarioId, orcamento.getCategoria(), mes, ano);
 
-            // 3. Cálculos de apoio
             BigDecimal restante = orcamento.getValorLimite().subtract(gastoNaCategoria);
 
-            // Evita divisão por zero e calcula a porcentagem
             Double porcentagem = 0.0;
             if (orcamento.getValorLimite().compareTo(BigDecimal.ZERO) > 0) {
                 porcentagem = gastoNaCategoria
@@ -63,7 +59,6 @@ public class OrcamentoService {
     }
 
     private BigDecimal calcularGastoCategoria(Long usuarioId, String categoria, Integer mes, Integer ano) {
-        // Lógica para filtrar transações do mês e somar apenas as DESPESAS da categoria
         LocalDate inicio = LocalDate.of(ano, mes, 1);
         LocalDate fim = inicio.plusMonths(1).minusDays(1);
 

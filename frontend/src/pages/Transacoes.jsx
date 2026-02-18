@@ -1,4 +1,3 @@
-// src/pages/Transacoes.jsx
 import { useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../contexts/AuthContext';
@@ -13,7 +12,6 @@ function Transacoes() {
     const [mesFiltro, setMesFiltro] = useState(String(dataAtual.getMonth() + 1).padStart(2, '0'));
     const [anoFiltro, setAnoFiltro] = useState(String(dataAtual.getFullYear()));
 
-    // 1. ESTADO SEPARADO PARA A MÁSCARA DE MOEDA
     const [valorInput, setValorInput] = useState('');
 
     const [novaOperacao, setNovaOperacao] = useState({
@@ -45,44 +43,50 @@ function Transacoes() {
 
     useEffect(() => { buscarDados(); }, [usuarioLogado, mesFiltro, anoFiltro]);
 
-    const lidarComMudanca = (e) => setNovaOperacao({ ...novaOperacao, [e.target.name]: e.target.value });
+    const lidarComMudanca = (e) => setNovaOperacao(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
-    // 2. FUNÇÃO DA MÁSCARA DE R$ EM TEMPO REAL
-    const lidarComMudancaMoeda = (e) => {
-        let valor = e.target.value.replace(/\D/g, ''); // Remove tudo o que não é número
-        if (valor === '') {
-            setValorInput('');
+    const lidarComMascaraValor = (e) => {
+        let valor = e.target.value;
+        valor = valor.replace(/\D/g, ""); 
+        
+        if (valor === "") {
+            setValorInput("");
             return;
         }
-        const valorFloat = parseFloat(valor) / 100;
-        // Formata para o padrão R$ brasileiro
-        setValorInput(valorFloat.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
+
+        valor = (Number(valor) / 100).toFixed(2);
+        valor = valor.replace(".", ",");
+        valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+        
+        setValorInput(valor);
     };
 
-    // 3. FUNÇÃO PARA REVERTER A MÁSCARA EM NÚMERO (Para enviar ao Java)
-    const reverterParaNumero = (valorFormatado) => {
-        if (!valorFormatado) return 0;
-        return parseFloat(valorFormatado.replace(/\D/g, '')) / 100;
+    const parseParaNumero = (strMoeda) => {
+        if (!strMoeda) return 0;
+        return parseFloat(String(strMoeda).replace(/\./g, "").replace(",", "."));
     };
 
     const submeterFormulario = (e) => {
         e.preventDefault();
         
-        // Pega no valor digitado e converte para decimal
-        const valorReal = reverterParaNumero(valorInput);
+        const valorReal = parseParaNumero(valorInput);
+        
         if (valorReal <= 0) {
-            alert("Por favor, introduza um valor válido.");
+            alert("Por favor, introduza um valor válido maior que zero.");
             return;
         }
 
         if (novaOperacao.formaPagamento === 'A_VISTA') {
             const dtoTransacao = {
-                descricao: novaOperacao.descricao,
+                nome: novaOperacao.descricao,       
+                descricao: novaOperacao.descricao,  
                 valor: valorReal,
                 tipo: novaOperacao.tipo,
                 categoria: novaOperacao.categoria,
+                metodoPagamento: 'A_VISTA',         
                 data: novaOperacao.data,
-                usuarioId: usuarioLogado.id
+                usuarioId: usuarioLogado.id,
+                totalParcelas: 1
             };
 
             api.post('/transacoes', dtoTransacao)
@@ -91,11 +95,9 @@ function Transacoes() {
                     limparFormulario();
                     buscarDados();
                 })
-                .catch(() => alert("Erro ao guardar transação."));
+                .catch(() => alert("Erro ao guardar transação. Verifique os dados."));
 
         } else if (novaOperacao.formaPagamento === 'CREDITO') {
-            // A MÁGICA DOS JUROS ACONTECE AQUI!
-            // Multiplicamos o valor da parcela pela quantidade para enviar o Total correto ao Java
             const totalComJuros = valorReal * parseInt(novaOperacao.qtdParcelas);
 
             const dtoCompraCartao = {
@@ -119,12 +121,11 @@ function Transacoes() {
 
     const limparFormulario = () => {
         setNovaOperacao({ formaPagamento: 'A_VISTA', descricao: '', tipo: 'DESPESA', categoria: '', data: '', cartaoId: '', qtdParcelas: 1 });
-        setValorInput(''); // Limpa a máscara
+        setValorInput(''); 
     };
 
-    // Função utilitária para imprimir dinheiro na tela bonito
     const formatarDinheiro = (valor) => {
-        return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        return (valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     };
 
     const totalReceitas = extrato.filter(t => t.tipoFluxo === 'RECEITA').reduce((acc, curr) => acc + curr.valor, 0);
@@ -165,12 +166,19 @@ function Transacoes() {
                         <input type="text" name="descricao" value={novaOperacao.descricao} onChange={lidarComMudanca} required className={inputStyle} placeholder="Ex: Mercado" />
                     </div>
 
-                    {/* MUDANÇA DE NOME E APLICAÇÃO DA MÁSCARA AQUI */}
-                    <div>
+                    <div className="relative">
                         <label className={labelStyle}>
                             {novaOperacao.formaPagamento === 'A_VISTA' ? 'Valor Total (R$)' : 'Valor da Parcela (R$)'}
                         </label>
-                        <input type="text" value={valorInput} onChange={lidarComMudancaMoeda} required className={inputStyle} placeholder="R$ 0,00" />
+                        <span className="absolute left-4 top-[42px] text-gray-500 text-sm font-bold">R$</span>
+                        <input 
+                            type="text" 
+                            value={valorInput} 
+                            onChange={lidarComMascaraValor} 
+                            required 
+                            className={`${inputStyle} pl-10`} 
+                            placeholder="0,00" 
+                        />
                     </div>
 
                     <div>

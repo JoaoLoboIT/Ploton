@@ -1,4 +1,3 @@
-// api/src/main/java/com/ploton/api/service/ExtratoService.java
 package com.ploton.api.service;
 
 import com.ploton.api.dto.ExtratoResponseDTO;
@@ -28,8 +27,6 @@ public class ExtratoService {
     public List<ExtratoResponseDTO> gerarExtratoMensal(Long usuarioId, int mes, int ano) {
         List<ExtratoResponseDTO> extrato = new ArrayList<>();
 
-        // 1. BUSCAR TRANSAÇÕES À VISTA DO MÊS
-        // Determinamos o primeiro e o último dia do mês para filtrar
         YearMonth anoMes = YearMonth.of(ano, mes);
         LocalDate inicioMes = anoMes.atDay(1);
         LocalDate fimMes = anoMes.atEndOfMonth();
@@ -43,13 +40,12 @@ public class ExtratoService {
                     t.getDescricao(),
                     t.getCategoria(),
                     t.getValor(),
-                    t.getTipo().name(), // "RECEITA" ou "DESPESA"
+                    t.getTipo().name(),
                     "A_VISTA",
                     "Conta Corrente"
             ));
         }
 
-        // 2. BUSCAR PARCELAS DE CARTÃO DE CRÉDITO DO MÊS (Fatura)
         List<Parcela> parcelas = parcelaRepository.findByUsuarioAndMesAndAno(usuarioId, mes, ano);
 
         for (Parcela p : parcelas) {
@@ -58,17 +54,16 @@ public class ExtratoService {
 
             extrato.add(new ExtratoResponseDTO(
                     "P-" + p.getId(),
-                    p.getCompra().getDataCompra(), // Mantemos a data original da compra
+                    p.getCompra().getDataCompra(),
                     p.getCompra().getDescricao(),
                     p.getCompra().getCategoria(),
                     p.getValor(),
-                    "DESPESA", // Cartão é sempre saída
+                    "DESPESA",
                     "CREDITO",
                     detalhes
             ));
         }
 
-        // 3. ORDENAR TUDO POR DATA (Do mais recente para o mais antigo)
         extrato.sort(Comparator.comparing(ExtratoResponseDTO::data).reversed());
 
         return extrato;

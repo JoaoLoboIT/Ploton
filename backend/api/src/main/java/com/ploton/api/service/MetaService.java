@@ -55,7 +55,6 @@ public class MetaService {
         } else if ("REMOVER".equalsIgnoreCase(tipo)) {
             BigDecimal novoValor = meta.getValorAtual().subtract(valor);
 
-            // Regra de Negócio: Não deixar o saldo ficar negativo
             if (novoValor.compareTo(BigDecimal.ZERO) < 0) {
                 throw new RuntimeException("Saldo insuficiente na meta para realizar esta retirada.");
             }
@@ -72,7 +71,6 @@ public class MetaService {
         Meta meta = metaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Meta não encontrada com ID: " + id));
 
-        // Atualizamos os dados cadastrais
         meta.setNome(dto.nome());
         meta.setDescricao(dto.descricao());
         meta.setValorAlvo(dto.valorAlvo());

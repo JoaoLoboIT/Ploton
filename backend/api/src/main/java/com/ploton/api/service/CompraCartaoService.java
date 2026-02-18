@@ -29,10 +29,8 @@ public class CompraCartaoService {
 
     @Transactional
     public CompraCartao registrar(CompraCartaoRequestDTO dto) {
-        // 1. Busca o Cartão (ou falha se não existir)
         CartaoCredito cartao = cartaoService.buscarPorId(dto.cartaoId());
 
-        // 2. Salva a "Mãe" (A Compra Original)
         CompraCartao compra = new CompraCartao();
         compra.setCartao(cartao);
         compra.setDescricao(dto.descricao());
@@ -43,13 +41,10 @@ public class CompraCartaoService {
 
         CompraCartao compraSalva = compraRepository.save(compra);
 
-        // 3. Calcula o valor de cada parcela
-        // Usamos RoundingMode.HALF_EVEN para divisão monetária justa
         BigDecimal valorParcela = dto.valorTotal().divide(
                 BigDecimal.valueOf(dto.quantidadeParcelas()), 2, RoundingMode.HALF_EVEN
         );
 
-        // 4. Gera as Parcelas
         gerarParcelas(compraSalva, valorParcela, cartao);
 
         return compraSalva;
@@ -58,29 +53,23 @@ public class CompraCartaoService {
     private void gerarParcelas(CompraCartao compra, BigDecimal valorParcela, CartaoCredito cartao) {
         LocalDate dataBase = compra.getDataCompra();
 
-        // Lógica do "Dia de Fechamento"
-        // Se comprou DEPOIS do fechamento, a 1ª parcela já pula pro mês seguinte
         if (dataBase.getDayOfMonth() >= cartao.getDiaFechamento()) {
             dataBase = dataBase.plusMonths(1);
         }
 
         for (int i = 0; i < compra.getQuantidadeParcelas(); i++) {
-            // Calcula a data da fatura alvo (Mês atual + i)
             LocalDate dataFatura = dataBase.plusMonths(i);
 
-            // 5. Busca a Gaveta (Fatura) ou Cria uma nova se não existir
             Fatura fatura = obterOuCriarFatura(cartao, dataFatura.getMonthValue(), dataFatura.getYear());
 
-            // 6. Cria a Parcela dentro da Fatura
             Parcela parcela = new Parcela();
             parcela.setCompra(compra);
             parcela.setFatura(fatura);
             parcela.setValor(valorParcela);
-            parcela.setNumeroParcela(i + 1); // Parcela 1, 2, 3...
+            parcela.setNumeroParcela(i + 1);
 
             parcelaRepository.save(parcela);
 
-            // 7. Atualiza o total da fatura
             fatura.setValorTotal(fatura.getValorTotal().add(valorParcela));
             faturaRepository.save(fatura);
         }
@@ -89,7 +78,6 @@ public class CompraCartaoService {
     private Fatura obterOuCriarFatura(CartaoCredito cartao, Integer mes, Integer ano) {
         return faturaRepository.findByCartaoIdAndMesAndAno(cartao.getId(), mes, ano)
                 .orElseGet(() -> {
-                    // Se não achou, cria uma gaveta nova
                     Fatura novaFatura = new Fatura();
                     novaFatura.setCartao(cartao);
                     novaFatura.setMes(mes);

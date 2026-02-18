@@ -1,4 +1,3 @@
-// src/pages/Login.jsx
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -35,7 +34,6 @@ function Login() {
         <div className="h-screen flex justify-center items-center bg-[#0b0f19]">
             <div className="bg-gray-900 p-10 rounded-2xl border border-gray-800 shadow-2xl w-full max-w-sm">
                 
-                {/* Logo Tech */}
                 <div className="flex justify-center mb-4">
                     <div className="w-12 h-12 rounded-xl bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)] flex items-center justify-center font-bold text-white text-2xl">
                         P

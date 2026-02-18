@@ -23,12 +23,10 @@ public class TransacaoController {
 
     @PostMapping
     public ResponseEntity<Void> criar(@RequestBody @Valid TransacaoRequestDTO dto) {
-        // RESOLVE O ERRO: Alinhado com o nome definido no TransacaoService
         service.salvarTransacao(dto);
         return ResponseEntity.ok().build();
     }
 
-    // Endpoint para listar transações de um usuário específico
     @GetMapping("/usuario/{usuarioId}")
     public ResponseEntity<List<Transacao>> listarPorUsuario(@PathVariable Long usuarioId) {
         List<Transacao> transacoes = service.listarPorUsuario(usuarioId);

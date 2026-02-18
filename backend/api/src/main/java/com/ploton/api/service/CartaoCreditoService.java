@@ -22,7 +22,6 @@ public class CartaoCreditoService {
 
     @Transactional
     public CartaoCredito cadastrar(CartaoCreditoRequestDTO dados) {
-        // Busca o dono do cartão. Se não achar, lança erro e para tudo.
         Usuario dono = usuarioService.buscarPorId(dados.usuarioId());
 
         CartaoCredito novoCartao = new CartaoCredito();
@@ -39,7 +38,6 @@ public class CartaoCreditoService {
         return repository.findByUsuarioId(usuarioId);
     }
 
-    // Adicione isso no CartaoCreditoService
     public CartaoCredito buscarPorId(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cartão não encontrado"));

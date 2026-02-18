@@ -1,6 +1,5 @@
 package com.ploton.api.dto;
 
-import com.ploton.api.model.Prioridade;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;

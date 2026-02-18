@@ -45,7 +45,7 @@ public class UsuarioService {
 
     @Transactional
     public Usuario atualizarSaldoManual(Long id, BigDecimal novoSaldo) {
-        Usuario usuario = buscarPorId(id); // O seu metodo que já busca o user ou lança erro
+        Usuario usuario = buscarPorId(id);
         usuario.setSaldoManual(novoSaldo);
         return repository.save(usuario);
     }

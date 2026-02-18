@@ -37,7 +37,6 @@ public class Transacao {
 
     private String categoria;
 
-    // Persiste o nome da constante ("RECEITA", "DESPESA") no banco
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TipoTransacao tipo;
@@ -45,7 +44,6 @@ public class Transacao {
     @Column(name = "metodo_pagamento")
     private String metodoPagamento;
 
-    // Define relacionamento e chave estrangeira (FK)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     @JsonIgnore

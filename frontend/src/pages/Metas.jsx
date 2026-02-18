@@ -35,7 +35,6 @@ function Metas() {
 
     useEffect(() => { buscarMetas(); }, [usuarioLogado]);
 
-    // Filtro apenas por texto agora
     const metasFiltradas = metas.filter(meta => 
         meta.nome?.toLowerCase().includes(filtroTexto.toLowerCase())
     );

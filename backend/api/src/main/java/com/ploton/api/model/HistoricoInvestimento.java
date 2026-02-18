@@ -13,11 +13,9 @@ public class HistoricoInvestimento {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // A data da "fotografia" do saldo
     @Column(name = "data_registro", nullable = false)
     private LocalDate dataRegistro;
 
-    // Quanto o investimento estava a valer neste exato dia
     @Column(name = "saldo_total_dia", nullable = false)
     private BigDecimal saldoTotalDoDia;
 
@@ -34,7 +32,6 @@ public class HistoricoInvestimento {
         this.investimento = investimento;
     }
 
-    // Getters e Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

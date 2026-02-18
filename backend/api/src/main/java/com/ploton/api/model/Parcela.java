@@ -18,13 +18,11 @@ public class Parcela {
     @Column(nullable = false)
     private BigDecimal valor;
 
-    // Relacionamento com a Compra Original (Mãe)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "compra_id", nullable = false)
     @JsonIgnore
     private CompraCartao compra;
 
-    // Relacionamento com a Fatura (Gaveta)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "fatura_id", nullable = false)
     @JsonIgnore
@@ -32,7 +30,6 @@ public class Parcela {
 
     public Parcela() {}
 
-    // Construtor auxiliar para facilitar a criação no Service
     public Parcela(Integer numeroParcela, BigDecimal valor, CompraCartao compra, Fatura fatura) {
         this.numeroParcela = numeroParcela;
         this.valor = valor;
@@ -40,7 +37,6 @@ public class Parcela {
         this.fatura = fatura;
     }
 
-    // Getters e Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

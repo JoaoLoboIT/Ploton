@@ -1,11 +1,10 @@
-// src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthProvider, AuthContext } from './contexts/AuthContext';
 
 import Sidebar from './components/Sidebar';
 import Login from './pages/Login';
-import Cadastro from './pages/Cadastro'; // <-- 1. IMPORTAÇÃO AQUI
+import Cadastro from './pages/Cadastro'; 
 import Dashboard from './pages/Dashboard';
 import Transacoes from './pages/Transacoes';
 import Investimentos from './pages/Investimentos';
@@ -20,7 +19,6 @@ function RotaProtegidaEComSidebar({ children }) {
   }
 
   return (
-    // Removemos o backgroundColor fixo daqui e trocamos style por className do Tailwind
     <div className="flex min-h-screen">
       <Sidebar />
       <main className="flex-1 p-8">
@@ -36,11 +34,9 @@ function App() {
       <BrowserRouter>
         <Routes>
 
-          {/* ROTAS PÚBLICAS (Sem Sidebar) */}
           <Route path="/" element={<Login />} />
-          <Route path="/cadastro" element={<Cadastro />} /> {/* <-- 2. NOVA ROTA AQUI */}
+          <Route path="/cadastro" element={<Cadastro />} /> 
 
-          {/* ROTAS PRIVADAS (Com Sidebar e protegidas) */}
           <Route path="/dashboard" element={
             <RotaProtegidaEComSidebar>
               <Dashboard />
